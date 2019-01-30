@@ -42,7 +42,7 @@ class ByteFileReaderTest
 	@Test
 	void openedCorrectly()
 	{
-		byte[] byteArray = {(byte) 112, (byte) 101, (byte) 116, (byte) 32, (byte) 114, (byte) 111, (byte) 99, (byte) 107};
+		byte[] byteArray = {(byte) 135, (byte) 104, (byte) 101, (byte) 120, (byte) 105, (byte) 110, (byte) 103};
 		assertArrayEquals(byteArray, bfr.getData());
 		assertEquals(0, bfr.getOffset());
 	}//end openedCorrectly
