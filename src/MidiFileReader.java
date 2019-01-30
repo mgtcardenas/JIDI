@@ -21,9 +21,9 @@ public class MidiFileReader
 	{
 		VerifyHeader(midiFile);
 
-		midiFile.trackmode = file.ReadShort();
-		midiFile.numEventTracks = file.ReadShort();
-		midiFile.quarternote = file.ReadShort();
+		midiFile.trackmode = file.readShort();
+		midiFile.numEventTracks = file.readShort();
+		midiFile.quarternote = file.readShort();
 
 		MUtil.SetQuarterNote(midiFile.quarternote);
 
@@ -39,19 +39,19 @@ public class MidiFileReader
 		ReadTimeSignature(midiFile);
 		RoundDurations(midiFile);
 
-		file.Empty();
+		file.empty();
 	}// end readFile
 
 	private void VerifyHeader(MidiFile omidiFile) throws MidiException, UnsupportedEncodingException
 	{
 		long length;
 
-		if (!file.ReadAscii(4).equals("MThd"))
+		if (!file.readAscii(4).equals("MThd"))
 		{
 			throw new MidiException("Doesn't start with MThd", 0);
 		}// end if
 
-		length = file.ReadInt();
+		length = file.readInt();
 		if (length != 6)
 		{
 			throw new MidiException("Bad MThd header", 4);
@@ -257,18 +257,18 @@ public class MidiFileReader
 		int             eventflag;
 		long            tracklength;
 		long            trackend;
-		String          id        = file.ReadAscii(4);
+		String          id        = file.readAscii(4);
 
 		if (!id.equals("MTrk"))
 		{
-			throw new MidiException("Bad MTrk header", file.GetOffset() - 4);
+			throw new MidiException("Bad MTrk header", file.getOffset() - 4);
 		}// end if
-		tracklength = file.ReadInt();
-		trackend = tracklength + file.GetOffset();
+		tracklength = file.readInt();
+		trackend = tracklength + file.getOffset();
 
 		eventflag = 0;
 
-		while (file.GetOffset() < trackend)
+		while (file.getOffset() < trackend)
 		{
 			// If the midi file is truncated here, we can still recover.
 			// Just return what we've parsed so far.
@@ -276,10 +276,10 @@ public class MidiFileReader
 			MidiEvent mEvent;
 			try
 			{
-				startoffset = file.GetOffset();
-				deltatime = file.ReadVarlen();
+				startoffset = file.getOffset();
+				deltatime = file.readVarlen();
 				starttime += deltatime;
-				peekevent = file.Peek();
+				peekevent = file.peek();
 			}
 			catch (MidiException e)
 			{
@@ -294,7 +294,7 @@ public class MidiFileReader
 			if (peekevent >= MUtil.EventNoteOff)
 			{
 				mEvent.HasEventflag = true;
-				eventflag = file.ReadByte();
+				eventflag = file.readByte();
 			}// end if
 			channel = 0;
 			if (eventflag < Byte.MAX_VALUE)
@@ -312,8 +312,8 @@ public class MidiFileReader
 					// TODO: Remove this test
 					System.out.println("QUIOVOLE PUTO!!!!");
 					mEvent.Channel = channel;
-					mEvent.Notenumber = file.ReadByte();
-					mEvent.Volume = file.ReadByte();
+					mEvent.Notenumber = file.readByte();
+					mEvent.Volume = file.readByte();
 					if (mEvent.Volume > 0)
 					{
 						mEvent.text = "ON  Ch: " + channel + " key: " + mEvent.Notenumber + " vel: " + mEvent.Volume;
@@ -329,52 +329,52 @@ public class MidiFileReader
 
 				case MUtil.EventNoteOff:
 					mEvent.Channel = channel;
-					mEvent.Notenumber = file.ReadByte();
-					mEvent.Volume = file.ReadByte();
+					mEvent.Notenumber = file.readByte();
+					mEvent.Volume = file.readByte();
 					mEvent.text = "OFF Ch: " + channel + " key: " + mEvent.Notenumber + " vel: " + mEvent.Volume;
 					mEvent.type = MUtil.EVENT_TYPE.get(mEvent.EventFlag);
 					break;
 
 				case MUtil.EventChannelPressure: // aka ChannelAfterTouch
 					mEvent.Channel = channel;
-					mEvent.ChanPressure = file.ReadByte();
+					mEvent.ChanPressure = file.readByte();
 					mEvent.text = MUtil.EVENT_TYPE.get(mEvent.EventFlag) + " Ch: " + channel + " pressure: " + mEvent.ChanPressure;
 					mEvent.type = MUtil.EVENT_TYPE.get(mEvent.EventFlag);
 					break;
 
 				case MUtil.EventControlChange:
 					mEvent.Channel = channel;
-					mEvent.ControlNum = file.ReadByte();
-					mEvent.ControlValue = file.ReadByte();
+					mEvent.ControlNum = file.readByte();
+					mEvent.ControlValue = file.readByte();
 					mEvent.text = "CC  Ch: " + channel + " C: " + MUtil.CC.get(mEvent.ControlNum) + " value: " + mEvent.ControlValue;
 					mEvent.type = MUtil.EVENT_TYPE.get(mEvent.EventFlag);
 					break;
 
 				case MUtil.EventKeyPressure:
 					mEvent.Channel = channel;
-					mEvent.Notenumber = file.ReadByte();
-					mEvent.KeyPressure = file.ReadByte();
+					mEvent.Notenumber = file.readByte();
+					mEvent.KeyPressure = file.readByte();
 					mEvent.text = MUtil.EVENT_TYPE.get(mEvent.EventFlag) + " Ch: " + channel + " note: " + mEvent.Notenumber + " pressure: " + mEvent.KeyPressure;
 					mEvent.type = MUtil.EVENT_TYPE.get(mEvent.EventFlag);
 					break;
 
 				case MUtil.EventPitchBend:
 					mEvent.Channel = channel;
-					mEvent.PitchBend = file.ReadShort();
+					mEvent.PitchBend = file.readShort();
 					mEvent.text = MUtil.EVENT_TYPE.get(mEvent.EventFlag) + " Ch: " + channel + " PitchBend: " + mEvent.PitchBend;
 					mEvent.type = MUtil.EVENT_TYPE.get(mEvent.EventFlag);
 					break;
 
 				case MUtil.EventProgramChange:
 					mEvent.Channel = channel;
-					mEvent.Instrument = file.ReadByte();
+					mEvent.Instrument = file.readByte();
 					mEvent.text = "PC  Ch: " + channel + " : " + MUtil.INSTRUMENT.get(mEvent.Instrument);
 					mEvent.type = MUtil.EVENT_TYPE.get(mEvent.EventFlag);
 					break;
 
 				case MUtil.SysexEvent1:
-					mEvent.MetaLength = file.ReadVarlen();
-					mEvent.Value = file.ReadBytes(mEvent.MetaLength);
+					mEvent.MetaLength = file.readVarlen();
+					mEvent.Value = file.readBytes(mEvent.MetaLength);
 					String val = "";
 					for (int i = 0; i < mEvent.Value.length; i++)
 					{
@@ -385,8 +385,8 @@ public class MidiFileReader
 					break;
 
 				case MUtil.SysexEvent2:
-					mEvent.MetaLength = file.ReadVarlen();
-					mEvent.Value = file.ReadBytes(mEvent.MetaLength);
+					mEvent.MetaLength = file.readVarlen();
+					mEvent.Value = file.readBytes(mEvent.MetaLength);
 					// TODO: should mEvent.Value be interpreted for it's bytes?
 					mEvent.text = MUtil.EVENT_TYPE.get(mEvent.EventFlag) + " length: " + mEvent.MetaLength + " value: " + mEvent.Value;
 					mEvent.type = MUtil.EVENT_TYPE.get(mEvent.EventFlag);
@@ -397,7 +397,7 @@ public class MidiFileReader
 					break;
 
 				default:
-					throw new MidiException("Unknown event " + mEvent.EventFlag, file.GetOffset() - 1);
+					throw new MidiException("Unknown event " + mEvent.EventFlag, file.getOffset() - 1);
 			}// end switch
 		}// end while
 
@@ -485,9 +485,9 @@ public class MidiFileReader
 		String result;
 
 		mEvent.EventFlag = MUtil.MetaEvent;
-		mEvent.MetaEvent = file.ReadByte();
-		mEvent.MetaLength = file.ReadVarlen();
-		mEvent.Value = file.ReadBytes(mEvent.MetaLength);
+		mEvent.MetaEvent = file.readByte();
+		mEvent.MetaLength = file.readVarlen();
+		mEvent.Value = file.readBytes(mEvent.MetaLength);
 		mEvent.text = "ME ";// "" + EVENT_TYPE.MetaEvent; //+" " + mEvent.MetaEvent;
 		mEvent.meta = MUtil.META_EVENT.get(mEvent.MetaEvent);
 		result = "";
@@ -560,7 +560,7 @@ public class MidiFileReader
 	{
 		if (mEvent.MetaLength != 3)
 		{
-			throw new MidiException("ME Tempo len == " + mEvent.MetaLength + " != 3", file.GetOffset());
+			throw new MidiException("ME Tempo len == " + mEvent.MetaLength + " != 3", file.getOffset());
 		}// end if
 
 		int value0 = Byte.toUnsignedInt(mEvent.Value[0]);

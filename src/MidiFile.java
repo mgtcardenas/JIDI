@@ -206,7 +206,7 @@ public class MidiFile
 
 	public static void main(String[] args) throws MidiException, IOException, UnsupportedEncodingException
 	{
-		MidiFile mf = new MidiFile("sample.mid");
+		MidiFile mf = new MidiFile("res/sample.mid");
 		System.out.println("EVERYTHING RAN FINE: " + mf.filename);
 	}// end main
 }// end MidiFile
