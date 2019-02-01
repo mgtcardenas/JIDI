@@ -23,4 +23,4 @@ public class ByteFileWriter
 		fos.write(data, 0, data.length);
 		fos.flush();
 	}//end writeBytes
-}//end ByteFileWriter
+}//end ByteFileWriter - class

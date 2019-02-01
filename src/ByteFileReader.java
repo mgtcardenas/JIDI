@@ -12,11 +12,11 @@ public class ByteFileReader
 	{
 		File file = new File(filePath);
 		if (!file.exists() || file.isDirectory())
-			throw new MidiException("File " + filePath + " does not exist", 0);
-		if (file.length() == 0)
-			throw new MidiException("File " + filePath + " is empty (0 bytes)", 0);
+		    throw new MidiException("File " + filePath + " does not exist", 0);
+		if (file.length() == 0                  )
+		    throw new MidiException("File " + filePath + " is empty (0 bytes)", 0);
 
-		this.data = Files.readAllBytes(file.toPath());
+		this.data   = Files.readAllBytes(file.toPath());
 		this.offset = 0;
 	}// end ByteFileReader - constructor
 
@@ -89,7 +89,7 @@ public class ByteFileReader
 	public int readShort() throws MidiException
 	{
 		checkFileSize(2);
-		int firstByte  = Byte.toUnsignedInt(data[offset]);
+		int firstByte  = Byte.toUnsignedInt(data[offset]    );
 		int secondByte = Byte.toUnsignedInt(data[offset + 1]);
 		int result     = (firstByte << 8 | secondByte);
 		offset += 2;
@@ -102,7 +102,7 @@ public class ByteFileReader
 	public long readInt() throws MidiException
 	{
 		checkFileSize(4);
-		long firstByte  = Byte.toUnsignedLong(data[offset]);
+		long firstByte  = Byte.toUnsignedLong(data[offset]    );
 		long secondByte = Byte.toUnsignedLong(data[offset + 1]);
 		long thridByte  = Byte.toUnsignedLong(data[offset + 2]);
 		long fourthByte = Byte.toUnsignedLong(data[offset + 3]);
@@ -143,14 +143,14 @@ public class ByteFileReader
 		int result;
 		int b;
 
-		b = readByte();
+		b      = readByte();
 		result = (b & 0x7f);
 
 		for (int i = 0; i < 3; i++)
 		{
 			if ((b & 0x80) != 0)
 			{
-				b = readByte();
+				b      = readByte();
 				result = ((result << 7) + (b & 0x7f));
 			}
 			else
@@ -162,4 +162,4 @@ public class ByteFileReader
 		return result;
 	}// end readVarlen
 
-}// end ByteFileReader
+}//end ByteFileReader - class

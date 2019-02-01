@@ -6,4 +6,4 @@ public class MidiException extends Exception
 	{
 		super(message + " at offset " + offset);
 	}// end MidiFileException - constructor
-}// end MidiFileException
+}//end MidiFileException - class
