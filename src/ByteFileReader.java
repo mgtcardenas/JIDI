@@ -138,10 +138,10 @@ public class ByteFileReader
 	 * when you encounter a byte that doesn't have the 8th bit set
 	 * (a byte less than 0x80).
 	 */
-	public int readVarlen() throws MidiException
+	public long readVarlen() throws MidiException
 	{
-		int result;
-		int b;
+		long result;
+		int  b;
 
 		b      = readByte();
 		result = (b & 0x7f);
@@ -154,9 +154,7 @@ public class ByteFileReader
 				result = ((result << 7) + (b & 0x7f));
 			}
 			else
-			{
-				break;
-			}// end if-else
+			    break;
 		}// end for
 
 		return result;
