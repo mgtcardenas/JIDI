@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MidiFileReader
@@ -11,33 +12,39 @@ public class MidiFileReader
 		this.file = new ByteFileReader(fileName);
 	}// end MidiFileReader - constructor
 
-	public static void main(String[] args)
-	{
-	}// end main
-
-	/**
-	 * We want note durations to span up to the next note in general.
-	 * The sheet music looks nicer that way. In contrast, sheet music
-	 * with lots of 16th/32nd notes separated by small rests doesn't
-	 * look as nice. Having nice looking sheet music is more important
-	 * than faithfully representing the Midi File data.
-	 * <p>
-	 * Therefore, this function rounds the duration of MidiNotes up to
-	 * the next note where possible.
-	 */
-	public static void roundDurations(MidiFile midiFile)
-	{
-
-	}// end RoundDuration
-
 	public void readFile(MidiFile midiFile) throws MidiException, UnsupportedEncodingException
 	{
+		verifyHeader();
 
+		midiFile.setTrackMode(file.readShort());
+		midiFile.setNumEventTracks(file.readShort());
+		midiFile.setQuarterNote(file.readShort());
+
+		MUtil.setQuarterNote(midiFile.getQuarterNote());
+
+		midiFile.setEvents(new ArrayList<MidiEvent>());
+		midiFile.setTracks(new ArrayList<MidiTrack>());
+		midiFile.setTrackPerChannel(false);
+
+		computeTracks(midiFile);
+		computePulsesSong(midiFile);
+		verifyChannels(midiFile);
+		checkStartTimes(midiFile.getTracks());
+		readTimeSignature(midiFile);
+		roundDurations(midiFile);
 	}// end readFile
 
-	private void verifyHeader(MidiFile omidiFile) throws MidiException, UnsupportedEncodingException
+	private void verifyHeader() throws MidiException
 	{
+		long length;
 
+		if (!file.readAscii(4).equals("MThd"))
+			throw new MidiException("Doesn't start with MThd", 0);
+
+		length = file.readInt();
+
+		if (length != 6)
+			throw new MidiException("Bad MThd header length", 4);
 	}// end verifyHeader
 
 	private void computeTracks(MidiFile omidiFile) throws MidiException, UnsupportedEncodingException
@@ -71,6 +78,21 @@ public class MidiFileReader
 	{
 
 	}// end readTimeSignature
+
+	/**
+	 * We want note durations to span up to the next note in general.
+	 * The sheet music looks nicer that way. In contrast, sheet music
+	 * with lots of 16th/32nd notes separated by small rests doesn't
+	 * look as nice. Having nice looking sheet music is more important
+	 * than faithfully representing the Midi File data.
+	 * <p>
+	 * Therefore, this function rounds the duration of MidiNotes up to
+	 * the next note where possible.
+	 */
+	public static void roundDurations(MidiFile midiFile)
+	{
+
+	}// end RoundDuration
 
 	/**
 	 * Parse a single Midi track into a list of MidiEvents.

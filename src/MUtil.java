@@ -274,7 +274,7 @@ public class MUtil
 		CC.put(127, "POLY"                 );
 	}// end CC
 
-	public static void SetQuarterNote(int QuarterNote)
+	public static void setQuarterNote(int QuarterNote)
 	{
 		MUtil.QuarterNote  = QuarterNote;
 
@@ -291,5 +291,5 @@ public class MUtil
 		EighthValue        =  6          * MUtil.base64;
 		TripletValue       =  5          * MUtil.base64;
 		SixteenthValue     =  3          * MUtil.base64;
-	}// end SetQuarterNote
+	}// end setQuarterNote
 }//end MUtil - class

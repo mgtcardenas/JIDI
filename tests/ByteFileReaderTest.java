@@ -13,7 +13,7 @@ class ByteFileReaderTest
 	@BeforeEach
 	void setUp() throws IOException, MidiException
 	{
-		bfr = new ByteFileReader("D:\\INTELLIJ_IDEA_PROJECTS\\JIDI\\tests\\test.mid");
+		bfr = new ByteFileReader("tests/test.mid");
 	}//end setUp
 
 	@AfterEach

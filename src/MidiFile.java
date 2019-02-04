@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -7,52 +9,150 @@ import java.util.List;
  * - The time signature (e.g. 4/4, 3/4, 6/8)
  * - The number of pulses per quarter note.
  * - The tempo (number of microseconds per quarter note).
- * <p>
+ *
  * The constructor takes a filename as input, and upon returning,
  * contains the parsed data from the midi file.
- * <p>
+ *
  * The methods ReadTrack() and ReadMetaEvent() are helper functions
  * called by the constructor during the parsing.
- * <p>
+ *
  * After the MidiFile is parsed and created, the user can retrieve the
  * tracks and notes by using the property Tracks and Tracks.Notes.
- * <p>
+ *
  * There are two methods for modifying the midi data based on the menu
  * options selected:
- * <p>
+ *
  * - ChangeMidiNotes()
- * Apply the menu options to the parsed MidiFile.
- * This uses the helper functions:
- * SplitTrack()
- * CombineToTwoTracks()
- * ShiftTime()
- * Transpose()
- * RoundStartTimes()
- * roundDurations()
- * <p>
+ * - Apply the menu options to the parsed MidiFile.
+ * - This uses the helper functions:
+ * - SplitTrack()
+ * - CombineToTwoTracks()
+ * - ShiftTime()
+ * - Transpose()
+ * - RoundStartTimes()
+ * - roundDurations()
  * - ChangeSound()
+ *
  * Apply the menu options to the MIDI music data, and save the modified
  * midi data to a file, for playback.
  */
 public class MidiFile
 {
-	public String          fileName;
-	public List<MidiEvent> events;
-	public List<MidiTrack> tracks;
-	public int             trackMode;
-	public TimeSignature   timeSig;
-	public int             quarterNote;
-	public int             totalPulses;
-	public boolean         trackPerChannel;
-	public int             numEventTracks;
+	private String          fileName;
+	private List<MidiEvent> events;
+	private List<MidiTrack> tracks;
+	private int             trackMode;
+	private TimeSignature   timeSig;
+	private int             quarterNote;
+	private int             totalPulses;
+	private boolean         trackPerChannel;
+	private int             numEventTracks;
 
-	public MidiFile(String fileName)
+	public MidiFile(String fileName) throws IOException, MidiException
 	{
-		this.fileName = fileName;
+		File           file;
+		String         name;
+		MidiFileReader mfr;
+
+		//gets filename without extension but keeps filename as path for MidiFileReader constructor
+		file          = new File(fileName);
+		name          = file.getName();
+		this.fileName = name.substring(0, name.lastIndexOf('.'));
+
+		mfr           = new MidiFileReader(fileName);
+
+		mfr.readFile(this);
 	}//end MidiFile - constructor
 
-	private String getFileNameWithoutExtension(String fileName)
+	//region Getters & Setters
+	public String getFileName()
 	{
-		return "";
-	}
+		return fileName;
+	}//end getFileName
+
+	public void setFileName(String fileName)
+	{
+		this.fileName = fileName;
+	}//end setFileName
+
+	public List<MidiEvent> getEvents()
+	{
+		return events;
+	}//end getEvents
+
+	public void setEvents(List<MidiEvent> events)
+	{
+		this.events = events;
+	}//end setEvents
+
+	public List<MidiTrack> getTracks()
+	{
+		return tracks;
+	}//end getTracks
+
+	public void setTracks(List<MidiTrack> tracks)
+	{
+		this.tracks = tracks;
+	}//end setTracks
+
+	public int getTrackMode()
+	{
+		return trackMode;
+	}//end getTrackMode
+
+	public void setTrackMode(int trackMode)
+	{
+		this.trackMode = trackMode;
+	}//end setTrackMode
+
+	public TimeSignature getTimeSig()
+	{
+		return timeSig;
+	}//end getTimeSig
+
+	public void setTimeSig(TimeSignature timeSig)
+	{
+		this.timeSig = timeSig;
+	}//end setTimeSig
+
+	public int getQuarterNote()
+	{
+		return quarterNote;
+	}//end getQuarterNote
+
+	public void setQuarterNote(int quarterNote)
+	{
+		this.quarterNote = quarterNote;
+	}//end setQuarterNote
+
+	public int getTotalPulses()
+	{
+		return totalPulses;
+	}//end getTotalPulses
+
+	public void setTotalPulses(int totalPulses)
+	{
+		this.totalPulses = totalPulses;
+	}//end setTotalPulses
+
+	public boolean hasTrackPerChannel()
+	{
+		return trackPerChannel;
+	}//end hasTrackPerChannel
+
+	public void setTrackPerChannel(boolean trackPerChannel)
+	{
+		this.trackPerChannel = trackPerChannel;
+	}//end setTrackPerChannel
+
+	public int getNumEventTracks()
+	{
+		return numEventTracks;
+	}//end getNumEventTracks
+
+	public void setNumEventTracks(int numEventTracks)
+	{
+		this.numEventTracks = numEventTracks;
+	}//end setNumEventTracks
+	//endregion Getters & Setters
 }//end MidiFile - class
