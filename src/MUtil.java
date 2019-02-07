@@ -3,7 +3,8 @@ import java.util.Hashtable;
 public class MUtil
 {
 	public static final String[] SCALE = {"A", "Bb", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
-	/* The list of Midi Events */
+
+	//region MIDI Events
 	public static final int EventNoteOff         = 0x80;
 	public static final int EventNoteOn          = 0x90;
 	public static final int EventKeyPressure     = 0xA0;
@@ -14,211 +15,168 @@ public class MUtil
 	public static final int SysexEvent1          = 0xF0;
 	public static final int SysexEvent2          = 0xF7;
 	public static final int MetaEvent            = 0xFF;
-	/* The list of Meta Events */
-	public static final int                        MetaEventSequence               =  0x0;
-	public static final int                        MetaEventText                   =  0x1;
-	public static final int                        MetaEventCopyright              =  0x2;
-	public static final int                        MetaEventSequenceName           =  0x3;
-	public static final int                        MetaEventInstrument             =  0x4;
-	public static final int                        MetaEventLyric                  =  0x5;
-	public static final int                        MetaEventMarker                 =  0x6;
-	public static final int                        MetaEventCuePoint               =  0x7;
-	public static final int                        MetaEventProgramName            =  0x8;
-	public static final int                        MetaEventDeviceName             =  0x9;
-	public static final int                        MetaEventMIDIChannelPrefix      = 0x20;
-	public static final int                        MetaEventMIDIPort               = 0x21;
-	public static final int                        MetaEventEndOfTrack             = 0x2F;
-	public static final int                        MetaEventTempo                  = 0x51;
-	public static final int                        MetaEventSMPTEOffset            = 0x54;
-	public static final int                        MetaEventTimeSignature          = 0x58;
-	public static final int                        MetaEventKeySignature           = 0x59;
-	public static final int                        MetaEventSequencerSpecificEvent = 0x7F;
-	public static final Hashtable<Integer, String> INSTRUMENT                      = new Hashtable<Integer, String>();
-	public static final Hashtable<Integer, String> EVENT_TYPE                      = new Hashtable<Integer, String>();
-	public static final Hashtable<Integer, String> META_EVENT                      = new Hashtable<Integer, String>();
-	public static final Hashtable<Integer, String> CC                              = new Hashtable<Integer, String>();
-	public static       int                        QuarterNote                     =    0;
-	public static       int                        whole                           =    0;
-	public static       int                        base32                          =    0;
-	public static       int                        base64                          =    0;
-	public static       int                        WholeValue;
-	public static       int                        DottedHalfValue;
-	public static       int                        HalfValue;
-	public static       int                        DottedQuarterValue;
-	public static       int                        QuarterValue;
-	public static       int                        DottedEighthValue;
-	public static       int                        EighthValue;
-	public static       int                        TripletValue;
-	public static       int                        SixteenthValue;
+	//endregion MIDI Events
+
+	//region Meta Events
+	public static final int MetaEventSequence               =  0x0;
+	public static final int MetaEventText                   =  0x1;
+	public static final int MetaEventCopyright              =  0x2;
+	public static final int MetaEventSequenceName           =  0x3;
+	public static final int MetaEventInstrument             =  0x4;
+	public static final int MetaEventLyric                  =  0x5;
+	public static final int MetaEventMarker                 =  0x6;
+	public static final int MetaEventCuePoint               =  0x7;
+	public static final int MetaEventProgramName            =  0x8;
+	public static final int MetaEventDeviceName             =  0x9;
+	public static final int MetaEventMIDIChannelPrefix      = 0x20;
+	public static final int MetaEventMIDIPort               = 0x21;
+	public static final int MetaEventEndOfTrack             = 0x2F;
+	public static final int MetaEventTempo                  = 0x51;
+	public static final int MetaEventSMPTEOffset            = 0x54;
+	public static final int MetaEventTimeSignature          = 0x58;
+	public static final int MetaEventKeySignature           = 0x59;
+	public static final int MetaEventSequencerSpecificEvent = 0x7F;
+	//endregion Meta Events
+
+	//region INSTRUMENT_NAME
+	public static final Hashtable<Integer, String> INSTRUMENT_NAME = new Hashtable<Integer, String>();
 
 	static
 	{
-		INSTRUMENT.put(  0, "Acoustic_Grand_Piano" );
-		INSTRUMENT.put(  1, "Bright_Acoustic_Piano");
-		INSTRUMENT.put(  2, "Electric_Grand_Piano" );
-		INSTRUMENT.put(  3, "Honky_tonk_Piano"     );
-		INSTRUMENT.put(  4, "Electric_Piano_1"     );
-		INSTRUMENT.put(  5, "Electric_Piano_2"     );
-		INSTRUMENT.put(  6, "Harpsichord"          );
-		INSTRUMENT.put(  7, "Clavi"                );
-		INSTRUMENT.put(  8, "Celesa"               );
-		INSTRUMENT.put(  9, "Glockenspiel"         );
-		INSTRUMENT.put( 10, "Music_Box"            );
-		INSTRUMENT.put( 11, "Vibraphone"           );
-		INSTRUMENT.put( 12, "Marimba"              );
-		INSTRUMENT.put( 13, "Xylophone"            );
-		INSTRUMENT.put( 14, "Tubular_Bells"        );
-		INSTRUMENT.put( 15, "Dulcimer"             );
-		INSTRUMENT.put( 16, "Drawbar_Organ"        );
-		INSTRUMENT.put( 17, "Percussive_Organ"     );
-		INSTRUMENT.put( 18, "Rock_Organ"           );
-		INSTRUMENT.put( 19, "Church_Organ"         );
-		INSTRUMENT.put( 20, "Reed_Organ"           );
-		INSTRUMENT.put( 21, "Accordion"            );
-		INSTRUMENT.put( 22, "Harmonica"            );
-		INSTRUMENT.put( 23, "Tango_Accordion"      );
-		INSTRUMENT.put( 24, "Acoustic_Guitar_nylon");
-		INSTRUMENT.put( 25, "Acoustic_Guitar_steel");
-		INSTRUMENT.put( 26, "Electric_Guitar_jazz" );
-		INSTRUMENT.put( 27, "Electric_Guitar_clean");
-		INSTRUMENT.put( 28, "Electric_Guitar_muted");
-		INSTRUMENT.put( 29, "Overdriven_Guitar"    );
-		INSTRUMENT.put( 30, "Distortion_Guitar"    );
-		INSTRUMENT.put( 31, "Guitar_harmonics"     );
-		INSTRUMENT.put( 32, "Acoustic_Bass"        );
-		INSTRUMENT.put( 33, "Electric_Bass_finger" );
-		INSTRUMENT.put( 34, "Electric_Bass_pick"   );
-		INSTRUMENT.put( 35, "Fretless_Bass"        );
-		INSTRUMENT.put( 36, "Slap_Bass_1"          );
-		INSTRUMENT.put( 37, "Slap_Bass_2"          );
-		INSTRUMENT.put( 38, "Synth_Bass_1"         );
-		INSTRUMENT.put( 39, "Synth_Bass_2"         );
-		INSTRUMENT.put( 40, "Violin"               );
-		INSTRUMENT.put( 41, "Viola"                );
-		INSTRUMENT.put( 42, "Cello"                );
-		INSTRUMENT.put( 43, "Contrabass"           );
-		INSTRUMENT.put( 44, "Tremolo_Strings"      );
-		INSTRUMENT.put( 45, "Pizzicato_Strings"    );
-		INSTRUMENT.put( 46, "Orchestral_Harp"      );
-		INSTRUMENT.put( 47, "Timpani"              );
-		INSTRUMENT.put( 48, "String_Ensemble_1"    );
-		INSTRUMENT.put( 49, "String_Ensemble_2"    );
-		INSTRUMENT.put( 50, "SynthString_1"        );
-		INSTRUMENT.put( 51, "SynthString_2"        );
-		INSTRUMENT.put( 52, "Choir_Aahs"           );
-		INSTRUMENT.put( 53, "Voice_Oohs"           );
-		INSTRUMENT.put( 54, "Synth_Voice"          );
-		INSTRUMENT.put( 55, "Orchestra_Hit"        );
-		INSTRUMENT.put( 56, "Trumpet"              );
-		INSTRUMENT.put( 57, "Trombone"             );
-		INSTRUMENT.put( 58, "Tuba"                 );
-		INSTRUMENT.put( 59, "Muted_Trumpet"        );
-		INSTRUMENT.put( 60, "French_Horn"          );
-		INSTRUMENT.put( 61, "Brass_Section"        );
-		INSTRUMENT.put( 62, "SynthBrass_1"         );
-		INSTRUMENT.put( 63, "SynthBrass_2"         );
-		INSTRUMENT.put( 64, "Soprano_Sax"          );
-		INSTRUMENT.put( 65, "Alto_Sax"             );
-		INSTRUMENT.put( 66, "Tenor_Sax"            );
-		INSTRUMENT.put( 67, "Baritone_Sax"         );
-		INSTRUMENT.put( 68, "Oboe"                 );
-		INSTRUMENT.put( 69, "English_Horn"         );
-		INSTRUMENT.put( 70, "Basoon"               );
-		INSTRUMENT.put( 71, "Clarinet"             );
-		INSTRUMENT.put( 72, "Piccolo"              );
-		INSTRUMENT.put( 73, "Flute"                );
-		INSTRUMENT.put( 74, "Recorder"             );
-		INSTRUMENT.put( 75, "Pan_Flute"            );
-		INSTRUMENT.put( 76, "Blown_Bottle"         );
-		INSTRUMENT.put( 77, "Shakuhachi"           );
-		INSTRUMENT.put( 78, "Whistle"              );
-		INSTRUMENT.put( 79, "Ocarina"              );
-		INSTRUMENT.put( 80, "Lead_1_square"        );
-		INSTRUMENT.put( 81, "Lead_2_sawtooth"      );
-		INSTRUMENT.put( 82, "Lead_3_calliope"      );
-		INSTRUMENT.put( 83, "Lead_4_chiff"         );
-		INSTRUMENT.put( 84, "Lead_5_charang"       );
-		INSTRUMENT.put( 85, "Lead_6_voice"         );
-		INSTRUMENT.put( 86, "Lead_7_fifths"        );
-		INSTRUMENT.put( 87, "Lead_8_bass_and_lead" );
-		INSTRUMENT.put( 88, "Pad_1_new_age"        );
-		INSTRUMENT.put( 89, "Pad_2_warm"           );
-		INSTRUMENT.put( 90, "Pad_3_polysynth"      );
-		INSTRUMENT.put( 91, "Pad_4_choir"          );
-		INSTRUMENT.put( 92, "Pad_5_bowed"          );
-		INSTRUMENT.put( 93, "Pad_6_metallic"       );
-		INSTRUMENT.put( 94, "Pad_7_halo"           );
-		INSTRUMENT.put( 95, "Pad_8_sweep"          );
-		INSTRUMENT.put( 96, "FX_1_rain"            );
-		INSTRUMENT.put( 97, "FX_2_soundtrack"      );
-		INSTRUMENT.put( 98, "FX_3_crystal"         );
-		INSTRUMENT.put( 99, "FX_4_atmosphere"      );
-		INSTRUMENT.put(100, "FX_5_brightness"      );
-		INSTRUMENT.put(101, "FX_6_goblins"         );
-		INSTRUMENT.put(102, "FX_7_echoes"          );
-		INSTRUMENT.put(103, "FX_8_sci_fi"          );
-		INSTRUMENT.put(104, "Sitar"                );
-		INSTRUMENT.put(105, "Banjo"                );
-		INSTRUMENT.put(106, "Shamisen"             );
-		INSTRUMENT.put(107, "Koto"                 );
-		INSTRUMENT.put(108, "Kalimba"              );
-		INSTRUMENT.put(109, "Bag_pipe"             );
-		INSTRUMENT.put(110, "Fiddle"               );
-		INSTRUMENT.put(111, "Shanai"               );
-		INSTRUMENT.put(112, "Tinkle_Bell"          );
-		INSTRUMENT.put(113, "Agogo"                );
-		INSTRUMENT.put(114, "Steel_Drums"          );
-		INSTRUMENT.put(115, "Woodblock"            );
-		INSTRUMENT.put(116, "Taiko_Drum"           );
-		INSTRUMENT.put(117, "Melodic_Tom"          );
-		INSTRUMENT.put(118, "Synth_Drum"           );
-		INSTRUMENT.put(119, "Reverse_Cymbal"       );
-		INSTRUMENT.put(120, "Guitar_Fret_Noise"    );
-		INSTRUMENT.put(121, "Breath_Noise"         );
-		INSTRUMENT.put(122, "Seashore"             );
-		INSTRUMENT.put(123, "Bird_Tweet"           );
-		INSTRUMENT.put(124, "Telephone_Ring"       );
-		INSTRUMENT.put(125, "Helicopter"           );
-		INSTRUMENT.put(126, "Applause"             );
-		INSTRUMENT.put(127, "Gushot"               );
-		INSTRUMENT.put(128, "Percussion"           );
-	}// end INSTRUMENT
+		INSTRUMENT_NAME.put(  0, "Acoustic_Grand_Piano" );
+		INSTRUMENT_NAME.put(  1, "Bright_Acoustic_Piano");
+		INSTRUMENT_NAME.put(  2, "Electric_Grand_Piano" );
+		INSTRUMENT_NAME.put(  3, "Honky_tonk_Piano"     );
+		INSTRUMENT_NAME.put(  4, "Electric_Piano_1"     );
+		INSTRUMENT_NAME.put(  5, "Electric_Piano_2"     );
+		INSTRUMENT_NAME.put(  6, "Harpsichord"          );
+		INSTRUMENT_NAME.put(  7, "Clavi"                );
+		INSTRUMENT_NAME.put(  8, "Celesa"               );
+		INSTRUMENT_NAME.put(  9, "Glockenspiel"         );
+		INSTRUMENT_NAME.put( 10, "Music_Box"            );
+		INSTRUMENT_NAME.put( 11, "Vibraphone"           );
+		INSTRUMENT_NAME.put( 12, "Marimba"              );
+		INSTRUMENT_NAME.put( 13, "Xylophone"            );
+		INSTRUMENT_NAME.put( 14, "Tubular_Bells"        );
+		INSTRUMENT_NAME.put( 15, "Dulcimer"             );
+		INSTRUMENT_NAME.put( 16, "Drawbar_Organ"        );
+		INSTRUMENT_NAME.put( 17, "Percussive_Organ"     );
+		INSTRUMENT_NAME.put( 18, "Rock_Organ"           );
+		INSTRUMENT_NAME.put( 19, "Church_Organ"         );
+		INSTRUMENT_NAME.put( 20, "Reed_Organ"           );
+		INSTRUMENT_NAME.put( 21, "Accordion"            );
+		INSTRUMENT_NAME.put( 22, "Harmonica"            );
+		INSTRUMENT_NAME.put( 23, "Tango_Accordion"      );
+		INSTRUMENT_NAME.put( 24, "Acoustic_Guitar_nylon");
+		INSTRUMENT_NAME.put( 25, "Acoustic_Guitar_steel");
+		INSTRUMENT_NAME.put( 26, "Electric_Guitar_jazz" );
+		INSTRUMENT_NAME.put( 27, "Electric_Guitar_clean");
+		INSTRUMENT_NAME.put( 28, "Electric_Guitar_muted");
+		INSTRUMENT_NAME.put( 29, "Overdriven_Guitar"    );
+		INSTRUMENT_NAME.put( 30, "Distortion_Guitar"    );
+		INSTRUMENT_NAME.put( 31, "Guitar_harmonics"     );
+		INSTRUMENT_NAME.put( 32, "Acoustic_Bass"        );
+		INSTRUMENT_NAME.put( 33, "Electric_Bass_finger" );
+		INSTRUMENT_NAME.put( 34, "Electric_Bass_pick"   );
+		INSTRUMENT_NAME.put( 35, "Fretless_Bass"        );
+		INSTRUMENT_NAME.put( 36, "Slap_Bass_1"          );
+		INSTRUMENT_NAME.put( 37, "Slap_Bass_2"          );
+		INSTRUMENT_NAME.put( 38, "Synth_Bass_1"         );
+		INSTRUMENT_NAME.put( 39, "Synth_Bass_2"         );
+		INSTRUMENT_NAME.put( 40, "Violin"               );
+		INSTRUMENT_NAME.put( 41, "Viola"                );
+		INSTRUMENT_NAME.put( 42, "Cello"                );
+		INSTRUMENT_NAME.put( 43, "Contrabass"           );
+		INSTRUMENT_NAME.put( 44, "Tremolo_Strings"      );
+		INSTRUMENT_NAME.put( 45, "Pizzicato_Strings"    );
+		INSTRUMENT_NAME.put( 46, "Orchestral_Harp"      );
+		INSTRUMENT_NAME.put( 47, "Timpani"              );
+		INSTRUMENT_NAME.put( 48, "String_Ensemble_1"    );
+		INSTRUMENT_NAME.put( 49, "String_Ensemble_2"    );
+		INSTRUMENT_NAME.put( 50, "SynthString_1"        );
+		INSTRUMENT_NAME.put( 51, "SynthString_2"        );
+		INSTRUMENT_NAME.put( 52, "Choir_Aahs"           );
+		INSTRUMENT_NAME.put( 53, "Voice_Oohs"           );
+		INSTRUMENT_NAME.put( 54, "Synth_Voice"          );
+		INSTRUMENT_NAME.put( 55, "Orchestra_Hit"        );
+		INSTRUMENT_NAME.put( 56, "Trumpet"              );
+		INSTRUMENT_NAME.put( 57, "Trombone"             );
+		INSTRUMENT_NAME.put( 58, "Tuba"                 );
+		INSTRUMENT_NAME.put( 59, "Muted_Trumpet"        );
+		INSTRUMENT_NAME.put( 60, "French_Horn"          );
+		INSTRUMENT_NAME.put( 61, "Brass_Section"        );
+		INSTRUMENT_NAME.put( 62, "SynthBrass_1"         );
+		INSTRUMENT_NAME.put( 63, "SynthBrass_2"         );
+		INSTRUMENT_NAME.put( 64, "Soprano_Sax"          );
+		INSTRUMENT_NAME.put( 65, "Alto_Sax"             );
+		INSTRUMENT_NAME.put( 66, "Tenor_Sax"            );
+		INSTRUMENT_NAME.put( 67, "Baritone_Sax"         );
+		INSTRUMENT_NAME.put( 68, "Oboe"                 );
+		INSTRUMENT_NAME.put( 69, "English_Horn"         );
+		INSTRUMENT_NAME.put( 70, "Basoon"               );
+		INSTRUMENT_NAME.put( 71, "Clarinet"             );
+		INSTRUMENT_NAME.put( 72, "Piccolo"              );
+		INSTRUMENT_NAME.put( 73, "Flute"                );
+		INSTRUMENT_NAME.put( 74, "Recorder"             );
+		INSTRUMENT_NAME.put( 75, "Pan_Flute"            );
+		INSTRUMENT_NAME.put( 76, "Blown_Bottle"         );
+		INSTRUMENT_NAME.put( 77, "Shakuhachi"           );
+		INSTRUMENT_NAME.put( 78, "Whistle"              );
+		INSTRUMENT_NAME.put( 79, "Ocarina"              );
+		INSTRUMENT_NAME.put( 80, "Lead_1_square"        );
+		INSTRUMENT_NAME.put( 81, "Lead_2_sawtooth"      );
+		INSTRUMENT_NAME.put( 82, "Lead_3_calliope"      );
+		INSTRUMENT_NAME.put( 83, "Lead_4_chiff"         );
+		INSTRUMENT_NAME.put( 84, "Lead_5_charang"       );
+		INSTRUMENT_NAME.put( 85, "Lead_6_voice"         );
+		INSTRUMENT_NAME.put( 86, "Lead_7_fifths"        );
+		INSTRUMENT_NAME.put( 87, "Lead_8_bass_and_lead" );
+		INSTRUMENT_NAME.put( 88, "Pad_1_new_age"        );
+		INSTRUMENT_NAME.put( 89, "Pad_2_warm"           );
+		INSTRUMENT_NAME.put( 90, "Pad_3_polysynth"      );
+		INSTRUMENT_NAME.put( 91, "Pad_4_choir"          );
+		INSTRUMENT_NAME.put( 92, "Pad_5_bowed"          );
+		INSTRUMENT_NAME.put( 93, "Pad_6_metallic"       );
+		INSTRUMENT_NAME.put( 94, "Pad_7_halo"           );
+		INSTRUMENT_NAME.put( 95, "Pad_8_sweep"          );
+		INSTRUMENT_NAME.put( 96, "FX_1_rain"            );
+		INSTRUMENT_NAME.put( 97, "FX_2_soundtrack"      );
+		INSTRUMENT_NAME.put( 98, "FX_3_crystal"         );
+		INSTRUMENT_NAME.put( 99, "FX_4_atmosphere"      );
+		INSTRUMENT_NAME.put(100, "FX_5_brightness"      );
+		INSTRUMENT_NAME.put(101, "FX_6_goblins"         );
+		INSTRUMENT_NAME.put(102, "FX_7_echoes"          );
+		INSTRUMENT_NAME.put(103, "FX_8_sci_fi"          );
+		INSTRUMENT_NAME.put(104, "Sitar"                );
+		INSTRUMENT_NAME.put(105, "Banjo"                );
+		INSTRUMENT_NAME.put(106, "Shamisen"             );
+		INSTRUMENT_NAME.put(107, "Koto"                 );
+		INSTRUMENT_NAME.put(108, "Kalimba"              );
+		INSTRUMENT_NAME.put(109, "Bag_pipe"             );
+		INSTRUMENT_NAME.put(110, "Fiddle"               );
+		INSTRUMENT_NAME.put(111, "Shanai"               );
+		INSTRUMENT_NAME.put(112, "Tinkle_Bell"          );
+		INSTRUMENT_NAME.put(113, "Agogo"                );
+		INSTRUMENT_NAME.put(114, "Steel_Drums"          );
+		INSTRUMENT_NAME.put(115, "Woodblock"            );
+		INSTRUMENT_NAME.put(116, "Taiko_Drum"           );
+		INSTRUMENT_NAME.put(117, "Melodic_Tom"          );
+		INSTRUMENT_NAME.put(118, "Synth_Drum"           );
+		INSTRUMENT_NAME.put(119, "Reverse_Cymbal"       );
+		INSTRUMENT_NAME.put(120, "Guitar_Fret_Noise"    );
+		INSTRUMENT_NAME.put(121, "Breath_Noise"         );
+		INSTRUMENT_NAME.put(122, "Seashore"             );
+		INSTRUMENT_NAME.put(123, "Bird_Tweet"           );
+		INSTRUMENT_NAME.put(124, "Telephone_Ring"       );
+		INSTRUMENT_NAME.put(125, "Helicopter"           );
+		INSTRUMENT_NAME.put(126, "Applause"             );
+		INSTRUMENT_NAME.put(127, "Gushot"               );
+		INSTRUMENT_NAME.put(128, "Percussion"           );
+	}// end INSTRUMENT_NAME
+	//endregion INSTRUMENT_NAME
 
-	static
-	{
-		EVENT_TYPE.put(0x80, "noteOff"          );
-		EVENT_TYPE.put(0x90, "NoteOn"           );
-		EVENT_TYPE.put(0xA0, "KeyPressure"      ); // POLYPHONIC AFTER TOUCH
-		EVENT_TYPE.put(0xB0, "ControlChange"    ); // FX,VIBRATO,SWITCHES,DEPTH,LOW_RES
-		EVENT_TYPE.put(0xC0, "ProgramChange"    ); // Voice Number(INSTRUMENT)
-		EVENT_TYPE.put(0xD0, "ChannelAfterTouch");
-		EVENT_TYPE.put(0xE0, "PitchBend"        );
-		EVENT_TYPE.put(0xF0, "SysexEvent1"      );
-		EVENT_TYPE.put(0xF7, "SysexEvent2"      );
-		EVENT_TYPE.put(0xFF, "MetaEvent"        );
-	}// end EVENT_TYPE
-
-	static
-	{
-		META_EVENT.put(0x00, "Sequence"              );
-		META_EVENT.put(0x01, "Text"                  );
-		META_EVENT.put(0x02, "Copyright"             );
-		META_EVENT.put(0x03, "SequenceName"          );
-		META_EVENT.put(0x04, "Instrument"            );
-		META_EVENT.put(0x05, "Lyric"                 );
-		META_EVENT.put(0x06, "Marker"                );
-		META_EVENT.put(0x07, "CuePoint"              );
-		META_EVENT.put(0x08, "ProgramName"           );
-		META_EVENT.put(0x09, "DeviceName"            );
-		META_EVENT.put(0x20, "MIDIChannelPrefix"     );
-		META_EVENT.put(0x21, "MIDIPort"              );
-		META_EVENT.put(0x2F, "EndOfTrack"            );
-		META_EVENT.put(0x51, "Tempo"                 );
-		META_EVENT.put(0x54, "SMPTEOffset"           );
-		META_EVENT.put(0x58, "TimeSignature"         );
-		META_EVENT.put(0x59, "KeySignature"          );
-		META_EVENT.put(0x7F, "SequencerSpecificEvent");
-	}
+	//region CONTROL_CHANGE
+	public static final Hashtable<Integer, String> CC = new Hashtable<Integer, String>();
 
 	static
 	{
@@ -273,6 +231,22 @@ public class MUtil
 		CC.put(126, "MONO"                 );
 		CC.put(127, "POLY"                 );
 	}// end CC
+	//endregion CONTROL_CHANGE
+
+	//region QUARTER_NOTE
+	public static int QuarterNote        = 0;
+	public static int whole              = 0;
+	public static int base32             = 0;
+	public static int base64             = 0;
+	public static int WholeValue;
+	public static int DottedHalfValue;
+	public static int HalfValue;
+	public static int DottedQuarterValue;
+	public static int QuarterValue;
+	public static int DottedEighthValue;
+	public static int EighthValue;
+	public static int TripletValue;
+	public static int SixteenthValue;
 
 	public static void setQuarterNote(int QuarterNote)
 	{
@@ -292,4 +266,5 @@ public class MUtil
 		TripletValue       =  5          * MUtil.base64;
 		SixteenthValue     =  3          * MUtil.base64;
 	}// end setQuarterNote
+	//endregion QUARTER_NOTE
 }//end MUtil - class
