@@ -16,12 +16,12 @@ import java.util.List;
 
 public class MidiTrack
 {
-	public int             quarterNote;
-	public boolean         hasNotes;
-	public int             tracknum;   // The track number
-	public List<MidiNote>  notes;      // List of Midi notes
-	public int             instrument; // Instrument for this track
-	public List<MidiEvent> lyrics;     // The lyrics in this track
+	private int             quarterNote;
+	private boolean         hasNotes;
+	private int             tracknum;   // The track number
+	private List<MidiNote>  notes;      // List of Midi notes
+	private int             instrument; // Instrument for this track
+	private List<MidiEvent> lyrics;     // The lyrics in this track
 
 	/**
 	 * Create an empty MidiTrack. Used by the clone method
@@ -32,7 +32,7 @@ public class MidiTrack
 		this.quarterNote = quarterNote;
 	}// end MidiTrack - constructor
 
-	/*
+	/**
 	 * Create a MidiTrack based on the Midi events. Extract the NoteOn/noteOff
 	 * events to gather the list of MidiNotes.
 	 */
@@ -40,6 +40,68 @@ public class MidiTrack
 	{
 
 	}// end MidiTrack - constructor 2
+
+	//region Getters & Setters
+	public int getQuarterNote()
+	{
+		return quarterNote;
+	}//end getQuarterNote
+
+	public void setQuarterNote(int quarterNote)
+	{
+		this.quarterNote = quarterNote;
+	}//end setQuarterNote
+
+	public boolean hasNotes()
+	{
+		return hasNotes;
+	}//end hasNotes
+
+	public void setHasNotes(boolean hasNotes)
+	{
+		this.hasNotes = hasNotes;
+	}//end setHasNotes
+
+	public int getTracknum()
+	{
+		return tracknum;
+	}//end getTracknum
+
+	public void setTracknum(int tracknum)
+	{
+		this.tracknum = tracknum;
+	}//end setTracknum
+
+	public List<MidiNote> getNotes()
+	{
+		return notes;
+	}//end getNotes
+
+	public void setNotes(List<MidiNote> notes)
+	{
+		this.notes = notes;
+	}//end setNotes
+
+	public int getInstrument()
+	{
+		return instrument;
+	}//end getInstrument
+
+	public void setInstrument(int instrument)
+	{
+		this.instrument = instrument;
+	}//end setInstrument
+
+	public List<MidiEvent> getLyrics()
+	{
+		return lyrics;
+	}//end getLyrics
+
+	public void setLyrics(List<MidiEvent> lyrics)
+	{
+		this.lyrics = lyrics;
+	}//end setLyrics
+	//endregion Getters & Setters
 
 	/**
 	 * Add a MidiNote to this track. This is called for each NoteOn event
@@ -58,14 +120,14 @@ public class MidiTrack
 
 	}// end noteOff
 
+	public String getInstrumentName()
+	{
+		return "";
+	}// end getInstrumentName
+
 	@Override
 	public String toString()
 	{
 		return "Track " + tracknum + " " + getInstrumentName() + "\n";
 	}// end toString
-
-	public String getInstrumentName()
-	{
-		return "";
-	}// end getInstrumentName
 }//end MidiTrack - class

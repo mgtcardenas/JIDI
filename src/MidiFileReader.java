@@ -14,19 +14,19 @@ public class MidiFileReader
 
 	public void readFile(MidiFile midiFile) throws MidiException, UnsupportedEncodingException
 	{
-		verifyHeader();
+		verifyHeader  (        );
 
-		midiFile.setTrackMode(file.readShort());
+		midiFile.setTrackMode      (file.readShort()          );
 		midiFile.setNumEventTracks(file.readShort());
 		midiFile.setQuarterNote(file.readShort());
 
 		MUtil.setQuarterNote(midiFile.getQuarterNote());
 
 		midiFile.setEvents(new ArrayList[midiFile.getNumEventTracks()]);
-		midiFile.setTracks(new ArrayList<MidiTrack>());
-		midiFile.setTrackPerChannel(false);
+		midiFile.setTracks         (new ArrayList<MidiTrack>());
+		midiFile.setTrackPerChannel(false                     );
 
-		computeTracks(midiFile);
+		computeTracks    (midiFile);
 		computePulsesSong(midiFile);
 		verifyChannels(midiFile);
 		checkStartTimes(midiFile.getTracks());
@@ -41,18 +41,61 @@ public class MidiFileReader
 		long length;
 
 		if (!file.readAscii(4).equals("MThd"))
-			throw new MidiException("Doesn't start with MThd", 0);
+		    throw new MidiException("Doesn't start with MThd", 0);
 
 		length = file.readInt();
 
 		if (length != 6)
-			throw new MidiException("Bad MThd header length", 4);
+		    throw new MidiException("Bad MThd header length", 4);
 	}// end verifyHeader
 
 	private void computeTracks(MidiFile omidiFile) throws MidiException, UnsupportedEncodingException
 	{
+		MidiTrack track;
+		for (int tracknum = 0; tracknum < omidiFile.getNumEventTracks(); tracknum++)
+		{
+			omidiFile.getEvents()[tracknum] = readTrackEvents();
+			track                           = new MidiTrack(omidiFile.getEvents()[tracknum], tracknum);
 
+			track.setHasNotes((track.getNotes().size() > 0));
+			if (track.hasNotes())
+			    omidiFile.getTracks().add(track);
+		}//end for - tracknum
 	}// end computeTracks
+
+	/**
+	 * Parse a single Midi track into a list of MidiEvents
+	 *
+	 * Entering this function, the file offset should be
+	 * at the start of the MTrk header.
+	 *
+	 * Upon exiting, the file offset should be at the
+	 * start of the next MTrk header.
+	 */
+	private List<MidiEvent> readTrackEvents() throws MidiException, UnsupportedEncodingException
+	{
+		List<MidiEvent> result;
+		long            startTime;
+		long            eventFlag;
+		long            trackLength;
+		long            trackEnd;
+
+		result    = new ArrayList<MidiEvent>();
+		startTime = 0;
+
+		if (!file.readAscii(4).equals("MTrk"))
+		    throw new MidiException("Bad MTrk header", file.getOffset() - 4);
+
+		trackLength = file.readInt();
+		trackEnd    = trackLength + file.getOffset();
+		eventFlag   = 0;
+
+		while (file.getOffset() < trackEnd)
+		{
+			//TODO: finish readTrackevents()
+		}//end while
+		return null;
+	}// end readTrackEvents
 
 	private void computePulsesSong(MidiFile omidiFile)
 	{
@@ -95,20 +138,6 @@ public class MidiFileReader
 	{
 
 	}// end RoundDuration
-
-	/**
-	 * Parse a single Midi track into a list of MidiEvents
-	 *
-	 * Entering this function, the file offset should be
-	 * at the start of the MTrk header.
-	 *
-	 * Upon exiting, the file offset should be at the
-	 * start of the next MTrk header.
-	 */
-	private List<MidiEvent> readTrackEvents() throws MidiException, UnsupportedEncodingException
-	{
-		return null;
-	}// end readTrackEvents
 
 	/**
 	 * Return true if this track contains multiple channels.
