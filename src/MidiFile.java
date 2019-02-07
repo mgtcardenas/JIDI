@@ -38,15 +38,15 @@ import java.util.List;
  */
 public class MidiFile
 {
-	private String          fileName;
-	private List<MidiEvent> events;
-	private List<MidiTrack> tracks;
-	private int             trackMode;
-	private TimeSignature   timeSig;
-	private int             quarterNote;
-	private int             totalPulses;
-	private boolean         trackPerChannel;
-	private int             numEventTracks;
+	private String            fileName;        // The MIDI file name
+	private List<MidiEvent>[] events;          // The raw MIDI Events, one list per track
+	private List<MidiTrack>   tracks;          // The tracks of the MIDI file that have notes
+	private int               trackMode;       // 0 (single track), 1 (simultaneous tracks), 2 (independent tracks)
+	private TimeSignature     timeSig;         // The Time Signature (e.g. 4/4, 3/4, 6/8)
+	private int               quarterNote;     // The number of pulses per quarter note. A pulse is a set time unit
+	private int               totalPulses;     // The total length of the song, in pulses
+	private boolean           trackPerChannel; // True if we've split each channel into a track
+	private int               numEventTracks;
 
 	public MidiFile(String fileName) throws IOException, MidiException
 	{
@@ -75,12 +75,12 @@ public class MidiFile
 		this.fileName = fileName;
 	}//end setFileName
 
-	public List<MidiEvent> getEvents()
+	public List<MidiEvent>[] getEvents()
 	{
 		return events;
 	}//end getEvents
 
-	public void setEvents(List<MidiEvent> events)
+	public void setEvents(List<MidiEvent>[] events)
 	{
 		this.events = events;
 	}//end setEvents

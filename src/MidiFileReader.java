@@ -22,7 +22,7 @@ public class MidiFileReader
 
 		MUtil.setQuarterNote(midiFile.getQuarterNote());
 
-		midiFile.setEvents(new ArrayList<MidiEvent>());
+		midiFile.setEvents(new ArrayList[midiFile.getNumEventTracks()]);
 		midiFile.setTracks(new ArrayList<MidiTrack>());
 		midiFile.setTrackPerChannel(false);
 
@@ -32,6 +32,8 @@ public class MidiFileReader
 		checkStartTimes(midiFile.getTracks());
 		readTimeSignature(midiFile);
 		roundDurations(midiFile);
+
+		file.empty();
 	}// end readFile
 
 	private void verifyHeader() throws MidiException
@@ -95,9 +97,11 @@ public class MidiFileReader
 	}// end RoundDuration
 
 	/**
-	 * Parse a single Midi track into a list of MidiEvents.
-	 * Entering this function, the file offset should be at the start of the MTrk
-	 * header.
+	 * Parse a single Midi track into a list of MidiEvents
+	 *
+	 * Entering this function, the file offset should be
+	 * at the start of the MTrk header.
+	 *
 	 * Upon exiting, the file offset should be at the
 	 * start of the next MTrk header.
 	 */
