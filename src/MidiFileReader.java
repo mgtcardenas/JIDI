@@ -74,10 +74,7 @@ public class MidiFileReader
 	private List<MidiEvent> readTrackEvents() throws MidiException
 	{
 		List<MidiEvent> result;
-		int             eventFlag;
-		long            startTime;
-		long            trackLength;
-		long            trackEnd;
+		int             eventFlag, startTime, trackLength, trackEnd;
 
 		result    = new ArrayList<MidiEvent>();
 		startTime = 0;
@@ -93,15 +90,14 @@ public class MidiFileReader
 		{
 			// If the midi file is truncated here, we can still recover.
 			// Just return what we've parsed so far.
-			int       startOffset, channel, peekEvent;
-			long      deltaTime;
+			int       startOffset, deltaTIme, channel, peekEvent;
 			MidiEvent mEvent;
 
 			try
 			{
 				startOffset =  file.getOffset();
-				deltaTime   =  file.readVarlen();
-				startTime   += deltaTime;
+				deltaTIme   =  file.readVarlen();
+				startTime   += deltaTIme;
 				peekEvent   =  file.peek();
 			}
 			catch (MidiException e)
@@ -110,7 +106,7 @@ public class MidiFileReader
 			}//end try - catch
 
 			mEvent = new MidiEvent();
-			mEvent.setDeltaTime(deltaTime);
+			mEvent.setDeltaTime(deltaTIme);
 			mEvent.setStartTime(startTime);
 			result.add(mEvent);
 
@@ -130,29 +126,28 @@ public class MidiFileReader
 			{
 				case MUtil.EventNoteOff:
 					mEvent.setChannel(channel);
-					mEvent.setNotenumber(file.readByte());
+					mEvent.setNoteNumber(file.readByte());
 					mEvent.setVolume(file.readByte());
-					mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNotenumber() + " vel: " + mEvent.getVolume());
+					mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
 					mEvent.setType("EventNoteOff"                                                                          );
 					break;
 
 				case MUtil.EventNoteOn:
 					mEvent.setChannel(channel);
-					mEvent.setNotenumber(file.readByte());
+					mEvent.setNoteNumber(file.readByte());
 					mEvent.setVolume(file.readByte());
 					if (mEvent.getVolume() > 0)
 					{
-						mEvent.setText("ON Ch: " + channel + " key: " + mEvent.getNotenumber() + " vel: " + mEvent.getVolume());
+						mEvent.setText("ON Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
 						mEvent.setType("EventNoteOn"                                                                          );
 					}
 					else
 					{
 						mEvent.setEventFlag(0x80);
-						mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNotenumber() + " vel: " + mEvent.getVolume());
+						mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
 						mEvent.setType("EventNoteOff"                                                                          );
 					}//end if - else
 					break;
-
 
 				case MUtil.EventProgramChange:
 					mEvent.setChannel(channel);

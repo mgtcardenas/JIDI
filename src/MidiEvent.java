@@ -8,15 +8,15 @@ public class MidiEvent
 	private String  text;
 	private String  type;         // Used to be EVENT_TYPE
 	private String  meta;         // Used to be META_EVENT
-	private long    deltaTime;    // The time between the previous event and this on
-	private long    startTime;    // The absolute time this event occurs
+	private int     deltaTime;    // The time between the previous event and this on
+	private int     startTime;    // The absolute time this event occurs
 	private int     tempo;        // The tempo, for tempo meta events
 	private int     metaLength;   // The metaevent length
 	private int     pitchBend;    // The pitch bend value
 	private boolean hasEventflag; // False if this is using the previous eventflag
 	private int     eventFlag;    // NoteOn, noteOff, etc. Full list is in class MidiFile
 	private int     channel;      // The channel this event occurs on
-	private int     notenumber;   // The note number (as in C4, D3, Bb5, ...)
+	private int     noteNumber;   // The note number (as in C4, D3, Bb5, ...)
 	private int     volume;       // The volume of the note aka velocity
 	private int     instrument;   // The instrument
 	private int     keyPressure;  // The key pressure
@@ -63,22 +63,22 @@ public class MidiEvent
 		this.meta = meta;
 	}//end setMeta
 
-	public long getDeltaTime()
+	public int getDeltaTime()
 	{
 		return deltaTime;
 	}//end getDeltaTime
 
-	public void setDeltaTime(long deltaTime)
+	public void setDeltaTime(int deltaTime)
 	{
 		this.deltaTime = deltaTime;
 	}//end setDeltaTime
 
-	public long getStartTime()
+	public int getStartTime()
 	{
 		return startTime;
 	}//end getStartTime
 
-	public void setStartTime(long startTime)
+	public void setStartTime(int startTime)
 	{
 		this.startTime = startTime;
 	}//end setStartTime
@@ -143,15 +143,15 @@ public class MidiEvent
 		this.channel = channel;
 	}//end setChannel
 
-	public int getNotenumber()
+	public int getNoteNumber()
 	{
-		return notenumber;
-	}//end getNotenumber
+		return noteNumber;
+	}//end getNoteNumber
 
-	public void setNotenumber(int notenumber)
+	public void setNoteNumber(int noteNumber)
 	{
-		this.notenumber = notenumber;
-	}//end setNotenumber
+		this.noteNumber = noteNumber;
+	}//end setNoteNumber
 
 	public int getVolume()
 	{

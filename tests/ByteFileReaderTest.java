@@ -64,8 +64,9 @@ class ByteFileReaderTest
 	@Test
 	void readsInt() throws MidiException
 	{
-		assertEquals(2271765880L, bfr.readInt());
-		assertEquals(4, bfr.getOffset());
+		bfr.skip(1);
+		assertEquals(1, bfr.getOffset());
+		assertEquals(1751480425, bfr.readInt());
 	}//end readsInt
 
 	@Test
@@ -84,7 +85,7 @@ class ByteFileReaderTest
 	@Test
 	void readsVarlen() throws MidiException
 	{
-		assertEquals(1000L, bfr.readVarlen());
+		assertEquals(1000, bfr.readVarlen());
 	}//end readsVarlen
 
 	@Test

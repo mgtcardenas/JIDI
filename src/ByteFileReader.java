@@ -3,6 +3,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+/**
+ * "The largest value allowed within a MIDI file is 0x0FFFFFFF (‭268,435,455)‬.
+ * This limit is set to allow variable-length quantities to be manipulated as 32-bit integers.""
+ *  - The MIDI File Format
+ *
+ * 2,147,483,647 is a signed integer's max value, so there is no point in using long...
+ */
 public class ByteFileReader
 {
 	private byte[] data;
@@ -99,14 +106,14 @@ public class ByteFileReader
 	/**
 	 * Read a 32-bit int from the file
 	 */
-	public long readInt() throws MidiException
+	public int readInt() throws MidiException
 	{
 		checkFileSize(4);
-		long firstByte  = Byte.toUnsignedLong(data[offset]    );
-		long secondByte = Byte.toUnsignedLong(data[offset + 1]);
-		long thridByte  = Byte.toUnsignedLong(data[offset + 2]);
-		long fourthByte = Byte.toUnsignedLong(data[offset + 3]);
-		long result     = (firstByte << 24 | secondByte << 16 | thridByte << 8 | fourthByte);
+		int firstByte  = Byte.toUnsignedInt(data[offset]    );
+		int secondByte = Byte.toUnsignedInt(data[offset + 1]);
+		int thirdByte  = Byte.toUnsignedInt(data[offset + 2]);
+		int fourthByte = Byte.toUnsignedInt(data[offset + 3]);
+		int result     = (firstByte << 24 | secondByte << 16 | thirdByte << 8 | fourthByte);
 		offset += 4;
 		return result;
 	}// end readInt
@@ -138,10 +145,10 @@ public class ByteFileReader
 	 * when you encounter a byte that doesn't have the 8th bit set
 	 * (a byte less than 0x80).
 	 */
-	public long readVarlen() throws MidiException
+	public int readVarlen() throws MidiException
 	{
-		long result;
-		int  b;
+		int result;
+		int b;
 
 		b      = readByte();
 		result = (b & 0x7f);
