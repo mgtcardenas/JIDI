@@ -16,8 +16,8 @@ public class MidiEvent
 	private boolean hasEventflag; // False if this is using the previous eventflag
 	private int     eventFlag;    // NoteOn, noteOff, etc. Full list is in class MidiFile
 	private int     channel;      // The channel this event occurs on
-	private int     notenumber;   // The note number
-	private int     volume;       // The volume of the note
+	private int     notenumber;   // The note number (as in C4, D3, Bb5, ...)
+	private int     volume;       // The volume of the note aka velocity
 	private int     instrument;   // The instrument
 	private int     keyPressure;  // The key pressure
 	private int     chanPressure; // The channel pressure

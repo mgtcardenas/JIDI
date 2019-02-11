@@ -4,6 +4,8 @@ public class MUtil
 {
 	public static final String[] SCALE = {"A", "Bb", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
 
+	public static final int UBYTE_MAX_VALUE = 255;
+
 	//region MIDI Events
 	public static final int EventNoteOff         = 0x80;
 	public static final int EventNoteOn          = 0x90;

@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +11,9 @@ public class MidiFileReader
 		this.file = new ByteFileReader(fileName);
 	}// end MidiFileReader - constructor
 
-	public void readFile(MidiFile midiFile) throws MidiException, UnsupportedEncodingException
+	public void readFile(MidiFile midiFile) throws MidiException
 	{
-		verifyHeader  (        );
+		verifyHeader();
 
 		midiFile.setTrackMode      (file.readShort()          );
 		midiFile.setNumEventTracks(file.readShort());
@@ -26,12 +25,12 @@ public class MidiFileReader
 		midiFile.setTracks         (new ArrayList<MidiTrack>());
 		midiFile.setTrackPerChannel(false                     );
 
-		computeTracks    (midiFile);
-		computePulsesSong(midiFile);
-		verifyChannels(midiFile);
-		checkStartTimes(midiFile.getTracks());
-		readTimeSignature(midiFile);
-		roundDurations(midiFile);
+		computeTracks(midiFile);
+		//		computePulsesSong(midiFile);
+		//		verifyChannels(midiFile);
+		//		checkStartTimes(midiFile.getTracks());
+		//		readTimeSignature(midiFile);
+		//		roundDurations(midiFile);
 
 		file.empty();
 	}// end readFile
@@ -49,7 +48,7 @@ public class MidiFileReader
 		    throw new MidiException("Bad MThd header length", 4);
 	}// end verifyHeader
 
-	private void computeTracks(MidiFile omidiFile) throws MidiException, UnsupportedEncodingException
+	private void computeTracks(MidiFile omidiFile) throws MidiException
 	{
 		MidiTrack track;
 		for (int tracknum = 0; tracknum < omidiFile.getNumEventTracks(); tracknum++)
@@ -72,11 +71,11 @@ public class MidiFileReader
 	 * Upon exiting, the file offset should be at the
 	 * start of the next MTrk header.
 	 */
-	private List<MidiEvent> readTrackEvents() throws MidiException, UnsupportedEncodingException
+	private List<MidiEvent> readTrackEvents() throws MidiException
 	{
 		List<MidiEvent> result;
+		int             eventFlag;
 		long            startTime;
-		long            eventFlag;
 		long            trackLength;
 		long            trackEnd;
 
@@ -92,10 +91,92 @@ public class MidiFileReader
 
 		while (file.getOffset() < trackEnd)
 		{
-			//TODO: finish readTrackevents()
+			// If the midi file is truncated here, we can still recover.
+			// Just return what we've parsed so far.
+			int       startOffset, channel, peekEvent;
+			long      deltaTime;
+			MidiEvent mEvent;
+
+			try
+			{
+				startOffset =  file.getOffset();
+				deltaTime   =  file.readVarlen();
+				startTime   += deltaTime;
+				peekEvent   =  file.peek();
+			}
+			catch (MidiException e)
+			{
+				return result;
+			}//end try - catch
+
+			mEvent = new MidiEvent();
+			mEvent.setDeltaTime(deltaTime);
+			mEvent.setStartTime(startTime);
+			result.add(mEvent);
+
+			if (peekEvent >= MUtil.EventNoteOff)
+			{
+				mEvent.setHasEventflag(true);
+				eventFlag = file.readByte();
+			}//end if
+
+			channel = 0;
+
+			if (eventFlag < MUtil.UBYTE_MAX_VALUE)
+			    channel = eventFlag % 16;
+
+			mEvent.setEventFlag(eventFlag - channel);
+			switch (mEvent.getEventFlag())
+			{
+				case MUtil.EventNoteOff:
+					mEvent.setChannel(channel);
+					mEvent.setNotenumber(file.readByte());
+					mEvent.setVolume(file.readByte());
+					mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNotenumber() + " vel: " + mEvent.getVolume());
+					mEvent.setType("EventNoteOff"                                                                          );
+					break;
+
+				case MUtil.EventNoteOn:
+					mEvent.setChannel(channel);
+					mEvent.setNotenumber(file.readByte());
+					mEvent.setVolume(file.readByte());
+					if (mEvent.getVolume() > 0)
+					{
+						mEvent.setText("ON Ch: " + channel + " key: " + mEvent.getNotenumber() + " vel: " + mEvent.getVolume());
+						mEvent.setType("EventNoteOn"                                                                          );
+					}
+					else
+					{
+						mEvent.setEventFlag(0x80);
+						mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNotenumber() + " vel: " + mEvent.getVolume());
+						mEvent.setType("EventNoteOff"                                                                          );
+					}//end if - else
+					break;
+
+
+				case MUtil.EventProgramChange:
+					mEvent.setChannel(channel);
+					mEvent.setInstrument(file.readByte());
+					mEvent.setText("PC Ch: " + channel + " : " + MUtil.INSTRUMENT_NAME.get(mEvent.getInstrument()));
+					mEvent.setType("EventProgramChange"                                                           );
+					break;
+
+				case MUtil.MetaEvent:
+					defineMetaEvent(mEvent);
+					mEvent.setType("MetaEvent");
+					break;
+				default:
+					throw new MidiException("Unknown event " + mEvent.getEventFlag(), file.getOffset() - 1);
+			}//end switch mEvent.getEventFlag()
 		}//end while
-		return null;
+
+		return result;
 	}// end readTrackEvents
+
+	private void defineMetaEvent(MidiEvent mEvent)
+	{
+
+	}// end defineMetaEvent
 
 	private void computePulsesSong(MidiFile omidiFile)
 	{
@@ -108,11 +189,8 @@ public class MidiFileReader
 	}// end verifyChannels
 
 	/**
-	 * <summary>
 	 * Check that the MidiNote start times are in increasing order.
 	 * This is for debugging purposes.
-	 * </summary>
-	 * <param name="tracks"></param>
 	 */
 	private void checkStartTimes(List<MidiTrack> tracks) throws MidiException
 	{
@@ -130,7 +208,7 @@ public class MidiFileReader
 	 * with lots of 16th/32nd notes separated by small rests doesn't
 	 * look as nice. Having nice looking sheet music is more important
 	 * than faithfully representing the Midi File data.
-	 * <p>
+	 *
 	 * Therefore, this function rounds the duration of MidiNotes up to
 	 * the next note where possible.
 	 */
@@ -157,11 +235,6 @@ public class MidiFileReader
 	{
 		return null;
 	}// end splitChannels
-
-	private void defineMetaEvent(MidiEvent mEvent) throws MidiException, UnsupportedEncodingException
-	{
-
-	}// end defineMetaEvent
 
 	private String setMetaEventTempo(MidiEvent mEvent) throws MidiException
 	{
