@@ -46,7 +46,6 @@ class ByteFileReaderTest
 		assertEquals(0, bfr.getOffset());
 	}//end peeks
 
-
 	@Test
 	void readsByte() throws MidiException
 	{

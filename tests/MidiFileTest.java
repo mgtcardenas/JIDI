@@ -28,4 +28,6 @@ public class MidiFileTest
 		assertEquals(2, mf.getNumEventTracks());
 		assertEquals(384, mf.getQuarterNote());
 	}//end readsHeaderCorrectly
+
+	//TODO: Create test for the whole MIDI File fields values
 }//end MidiFileTest - class

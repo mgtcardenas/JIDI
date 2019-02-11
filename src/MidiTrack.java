@@ -53,42 +53,26 @@ public class MidiTrack
 				MidiNote note = new MidiNote(mEvent.getStartTime(), mEvent.getChannel(), mEvent.getNoteNumber(), mEvent.getVolume(), 0);
 				addNote(note);
 			}
-			else
+			else if (mEvent.getEventFlag() == MUtil.EventNoteOn && mEvent.getVolume() == 0)
 			{
-				if (mEvent.getEventFlag() == MUtil.EventNoteOn && mEvent.getVolume() == 0)
-				{
 					noteOff(mEvent.getChannel(), mEvent.getNoteNumber(), mEvent.getStartTime());
 					mEvent.setEventFlag(128 + mEvent.getChannel());
 					//mevent.Text = MidiFile.EventName(mevent.EventFlag);
-				}
-				else
-				{
-					if (mEvent.getEventFlag() == (MUtil.EventNoteOff))
-					{
-						noteOff(mEvent.getChannel(), mEvent.getNoteNumber(), mEvent.getStartTime());
-						//mevent.EventFlag = (byte)(127 + mevent.Channel);
-						//mevent.Text = MidiFile.EventName(mevent.EventFlag);
-					}
-					else
-					{
-						if (mEvent.getEventFlag() == MUtil.EventProgramChange)
-						{
-							instrument = mEvent.getInstrument();
-						}
-						else
-						{
-							if (mEvent.getMetaEvent() ==MUtil.MetaEventLyric)
-							{
-								if(this.lyrics == null)
-								{
-									this.lyrics = new ArrayList<MidiEvent>();
-								}//end if
+			}
+			else if (mEvent.getEventFlag() == (MUtil.EventNoteOff))
+			{
+				noteOff(mEvent.getChannel(), mEvent.getNoteNumber(), mEvent.getStartTime());
+				//mevent.EventFlag = (byte)(127 + mevent.Channel);
+				//mevent.Text = MidiFile.EventName(mevent.EventFlag);
+			}
+			else if (mEvent.getEventFlag() == MUtil.EventProgramChange)
+				instrument = mEvent.getInstrument();
+			else if (mEvent.getMetaEvent() ==MUtil.MetaEventLyric)
+			{
+				if(this.lyrics == null)
+					this.lyrics = new ArrayList<MidiEvent>();
 
-								this.lyrics.add(mEvent);
-							}//end if
-						}//end if - else
-					}//end if - else
-				}//end if - else
+				this.lyrics.add(mEvent);
 			}//end if - else
 		}//end foreach
 

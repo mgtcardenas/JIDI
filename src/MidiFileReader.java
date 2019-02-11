@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -195,7 +196,7 @@ public class MidiFileReader
 				break;
 
 			case MUtil.MetaEventSequenceName:
-				result = " End of track ";
+				result = " SequenceName " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
 				break;
 		}//end switch mEvent.getMetaEvent()
 
@@ -225,10 +226,18 @@ public class MidiFileReader
 
 	private String setMetaEventTempo(MidiEvent mEvent) throws MidiException
 	{
+		int firstByte, secondByte, thirdByte, tempo;
+
 		if (mEvent.getMetaLength() != 3)
 		    throw new MidiException("ME Tempo len == " + mEvent.getMetaLength() + " != 3", file.getOffset());
 
-		mEvent.setTempo((mEvent.getValue()[0] << 16) | (mEvent.getValue()[1] << 8) | mEvent.getValue()[2]);
+		firstByte  = Byte.toUnsignedInt(mEvent.getValue()[0]);
+		secondByte = Byte.toUnsignedInt(mEvent.getValue()[1]);
+		thirdByte  = Byte.toUnsignedInt(mEvent.getValue()[2]);
+
+		tempo = (firstByte << 16 | secondByte << 8 | thirdByte);
+
+		mEvent.setTempo(tempo);
 
 		return " Tempo " + mEvent.getTempo();
 	}// end setMetaEventTempo

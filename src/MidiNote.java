@@ -17,16 +17,16 @@
  */
 public class MidiNote
 {
-	public static final String[]       HARMONY      = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
-	private               String       name;
-	private               int          startTime;                                                                        // The start time, in pulses
-	private               int          channel;                                                                          // The channel
-	private               int          noteNumber;                                                                       // The note, from 0 to 127. Middle C is 60
-	private               int          length;                                                                           // The duration, in pulses
-	private               int          velocity;
-	private               int          units;                                                                            // relative duration in units
-	private               int          start;
-	private               NoteDuration noteDuration;
+	public  static final String[]     HARMONY      = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
+	private              String       name;
+	private              int          startTime;                                                                        // The start time, in pulses
+	private              int          channel;                                                                          // The channel
+	private              int          noteNumber;                                                                       // The note, from 0 to 127. Middle C is 60
+	private              int          length;                                                                           // The duration, in pulses
+	private              int          velocity;
+	private              int          units;                                                                            // relative duration in units
+	private              int          start;
+	private              NoteDuration noteDuration;
 
 	/**
 	 * Create a new MidiNote. This is called when a NoteOn event is
