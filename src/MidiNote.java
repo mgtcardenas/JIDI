@@ -7,7 +7,7 @@
  * noteOff events with the corresponding NoteOn event.
  * The channels for the NoteOn and noteOff events must be
  * the same.
- * notenumber - The note number, from 0 to 127. Middle C is 60.
+ * noteNumber - The note number, from 0 to 127. Middle C is 60.
  * duration - The time duration (measured in pulses) after which the
  * note is released.
  * <p>
@@ -17,16 +17,16 @@
  */
 public class MidiNote
 {
-	public static final String[]     HARMONY      = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
-	public              String       name;
-	public              int          startTime;                                                                        // The start time, in pulses
-	public              int          channel;                                                                          // The channel
-	public              int          notenumber;                                                                       // The note, from 0 to 127. Middle C is 60
-	public              int          length;                                                                           // The duration, in pulses
-	public              int          velocity;
-	public              int          units;                                                                            // relative duration in units
-	public              int          start;
-	public              NoteDuration noteDuration;
+	public static final String[]       HARMONY      = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
+	private               String       name;
+	private               int          startTime;                                                                        // The start time, in pulses
+	private               int          channel;                                                                          // The channel
+	private               int          noteNumber;                                                                       // The note, from 0 to 127. Middle C is 60
+	private               int          length;                                                                           // The duration, in pulses
+	private               int          velocity;
+	private               int          units;                                                                            // relative duration in units
+	private               int          start;
+	private               NoteDuration noteDuration;
 
 	/**
 	 * Create a new MidiNote. This is called when a NoteOn event is
@@ -36,12 +36,104 @@ public class MidiNote
 	{
 		this.startTime  = starttime;
 		this.channel    = channel;
-		this.notenumber = noteNumber;
+		this.noteNumber = noteNumber;
 		this.length     = duration;
 		this.velocity   = velocity;
 
 		name            = HARMONY[(noteNumber + 3) % 12];
 	}// end MidiNote - Constructor
+
+	//region Getters & Setters
+	public String getName()
+	{
+		return name;
+	}//end getName
+
+	public void setName(String name)
+	{
+		this.name = name;
+	}//end setName
+
+	public int getStartTime()
+	{
+		return startTime;
+	}//end getStartTime
+
+	public void setStartTime(int startTime)
+	{
+		this.startTime = startTime;
+	}//end setStartTime
+
+	public int getChannel()
+	{
+		return channel;
+	}//end getChannel
+
+	public void setChannel(int channel)
+	{
+		this.channel = channel;
+	}//end setChannel
+
+	public int getNoteNumber()
+	{
+		return noteNumber;
+	}//end getNoteNumber
+
+	public void setNoteNumber(int noteNumber)
+	{
+		this.noteNumber = noteNumber;
+	}//end setNoteNumber
+
+	public int getLength()
+	{
+		return length;
+	}//end getLength
+
+	public void setLength(int length)
+	{
+		this.length = length;
+	}//end setLength
+
+	public int getVelocity()
+	{
+		return velocity;
+	}//end getVelocity
+
+	public void setVelocity(int velocity)
+	{
+		this.velocity = velocity;
+	}//end setVelocity
+
+	public int getUnits()
+	{
+		return units;
+	}//end getUnits
+
+	public void setUnits(int units)
+	{
+		this.units = units;
+	}//end setUnits
+
+	public int getStart()
+	{
+		return start;
+	}//end getStart
+
+	public void setStart(int start)
+	{
+		this.start = start;
+	}//end setStart
+
+	public NoteDuration getNoteDuration()
+	{
+		return noteDuration;
+	}//end getNoteDuration
+
+	public void setNoteDuration(NoteDuration noteDuration)
+	{
+		this.noteDuration = noteDuration;
+	}//end setNoteDuration
+	//endregion Getters & Setters
 
 	/**
 	 * A noteOff event occurs for this note at the given time.
@@ -59,6 +151,6 @@ public class MidiNote
 	@Override
 	public String toString()
 	{
-		return HARMONY[(notenumber + 3) % 12] + "   " + noteDuration;
+		return HARMONY[(noteNumber + 3) % 12] + "   " + noteDuration;
 	}// end toString
 }//end MidiNote - class

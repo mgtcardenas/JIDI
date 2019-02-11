@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -6,14 +7,13 @@ import java.util.List;
  * gets:
  * - The list of midi notes in the track.
  * - The first instrument used in the track.
- * <p>
+ *
  * For each NoteOn event in the midi file, a new MidiNote is created
  * and added to the track, using the AddNote() method.
- * <p>
+ *
  * The noteOff() method is called when a noteOff event is encountered,
  * in order to update the duration of the MidiNote.
  */
-
 public class MidiTrack
 {
 	private int             quarterNote;
@@ -29,7 +29,9 @@ public class MidiTrack
 	public MidiTrack(int tracknum, int quarterNote)
 	{
 		this.tracknum    = tracknum;
+		this.notes       = new ArrayList<MidiNote>();
 		this.quarterNote = quarterNote;
+		this.instrument  = 0;
 	}// end MidiTrack - constructor
 
 	/**
@@ -38,7 +40,65 @@ public class MidiTrack
 	 */
 	public MidiTrack(List<MidiEvent> events, int tracknum)
 	{
+		int lyricCount;
 
+		this.tracknum   = tracknum;
+		this.notes      = new ArrayList<MidiNote>(events.size());
+		this.instrument = 0;
+
+		for (MidiEvent mEvent : events)
+		{
+			if (mEvent.getEventFlag() == MUtil.EventNoteOn && mEvent.getVolume() > 0)
+			{
+				MidiNote note = new MidiNote(mEvent.getStartTime(), mEvent.getChannel(), mEvent.getNoteNumber(), mEvent.getVolume(), 0);
+				addNote(note);
+			}
+			else
+			{
+				if (mEvent.getEventFlag() == MUtil.EventNoteOn && mEvent.getVolume() == 0)
+				{
+					noteOff(mEvent.getChannel(), mEvent.getNoteNumber(), mEvent.getStartTime());
+					mEvent.setEventFlag(128 + mEvent.getChannel());
+					//mevent.Text = MidiFile.EventName(mevent.EventFlag);
+				}
+				else
+				{
+					if (mEvent.getEventFlag() == (MUtil.EventNoteOff))
+					{
+						noteOff(mEvent.getChannel(), mEvent.getNoteNumber(), mEvent.getStartTime());
+						//mevent.EventFlag = (byte)(127 + mevent.Channel);
+						//mevent.Text = MidiFile.EventName(mevent.EventFlag);
+					}
+					else
+					{
+						if (mEvent.getEventFlag() == MUtil.EventProgramChange)
+						{
+							instrument = mEvent.getInstrument();
+						}
+						else
+						{
+							if (mEvent.getMetaEvent() ==MUtil.MetaEventLyric)
+							{
+								if(this.lyrics == null)
+								{
+									this.lyrics = new ArrayList<MidiEvent>();
+								}//end if
+
+								this.lyrics.add(mEvent);
+							}//end if
+						}//end if - else
+					}//end if - else
+				}//end if - else
+			}//end if - else
+		}//end foreach
+
+		if (this.notes.size() > 0 && this.notes.get(0).getChannel() == 9)
+			instrument = 128; // Percussion
+
+		lyricCount = 0;
+
+		if(lyrics != null)
+			lyricCount = this.lyrics.size();
 	}// end MidiTrack - constructor 2
 
 	//region Getters & Setters
@@ -117,7 +177,16 @@ public class MidiTrack
 	 */
 	public void noteOff(int channel, int notenumber, int endtime)
 	{
-
+		MidiNote note;
+		for (int i = this.notes.size() - 1; i >= 0; i--)
+		{
+			note = this.notes.get(i);
+			if (note.getChannel() == channel && note.getNoteNumber() == notenumber && note.getLength() == 0)
+			{
+				note.noteOff(endtime);
+				return ;
+			}//end if
+		}//end for - i
 	}// end noteOff
 
 	public String getInstrumentName()
