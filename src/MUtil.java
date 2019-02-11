@@ -2,9 +2,9 @@ import java.util.Hashtable;
 
 public class MUtil
 {
-	public static final String[] SCALE = {"A", "Bb", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
+	public static final String[] SCALE           = {"A", "Bb", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
 
-	public static final int UBYTE_MAX_VALUE = 255;
+	public static final int      UBYTE_MAX_VALUE = 255;
 
 	//region MIDI Events
 	public static final int EventNoteOff         = 0x80;
@@ -39,6 +39,32 @@ public class MUtil
 	public static final int MetaEventKeySignature           = 0x59;
 	public static final int MetaEventSequencerSpecificEvent = 0x7F;
 	//endregion Meta Events
+
+	//region META_NAME
+	public static final Hashtable<Integer, String> META_NAME = new Hashtable<Integer, String>();
+
+	static
+	{
+		META_NAME.put( 0x0, "MetaEventSequence"              );
+		META_NAME.put( 0x1, "MetaEventText                  ");
+		META_NAME.put( 0x2, "MetaEventCopyright             ");
+		META_NAME.put( 0x3, "MetaEventSequenceName          ");
+		META_NAME.put( 0x4, "MetaEventInstrument            ");
+		META_NAME.put( 0x5, "MetaEventLyric                 ");
+		META_NAME.put( 0x6, "MetaEventMarker                ");
+		META_NAME.put( 0x7, "MetaEventCuePoint              ");
+		META_NAME.put( 0x8, "MetaEventProgramName           ");
+		META_NAME.put( 0x9, "MetaEventDeviceName            ");
+		META_NAME.put(0x20, "MetaEventMIDIChannelPrefix     ");
+		META_NAME.put(0x21, "MetaEventMIDIPort              ");
+		META_NAME.put(0x2F, "MetaEventEndOfTrack            ");
+		META_NAME.put(0x51, "MetaEventTempo                 ");
+		META_NAME.put(0x54, "MetaEventSMPTEOffset           ");
+		META_NAME.put(0x58, "MetaEventTimeSignature         ");
+		META_NAME.put(0x59, "MetaEventKeySignature          ");
+		META_NAME.put(0x7F, "MetaEventSequencerSpecificEvent");
+	}
+	//endregion META_NAME
 
 	//region INSTRUMENT_NAME
 	public static final Hashtable<Integer, String> INSTRUMENT_NAME = new Hashtable<Integer, String>();

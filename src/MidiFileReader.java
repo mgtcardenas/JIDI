@@ -168,10 +168,70 @@ public class MidiFileReader
 		return result;
 	}// end readTrackEvents
 
-	private void defineMetaEvent(MidiEvent mEvent)
+	private void defineMetaEvent(MidiEvent mEvent) throws MidiException
 	{
+		String result;
 
+		mEvent.setEventFlag(MUtil.MetaEvent);
+		mEvent.setMetaEvent (file.readByte  ()                         );
+		mEvent.setMetaLength(file.readVarlen()                         );
+		mEvent.setValue(file.readBytes(mEvent.getMetaLength()));
+		mEvent.setText("ME ");                                            //"" + EVENT_TYPE.MetaEvent; //+" " + mEvent.MetaEvent;
+		mEvent.setMeta      (MUtil.META_NAME.get(mEvent.getMetaEvent()));
+		result = "";
+
+		switch (mEvent.getMetaEvent())
+		{
+			case MUtil.MetaEventTimeSignature:
+				result = " TimeSignature " + setMetaEventTimeSignature(mEvent);
+				break;
+
+			case MUtil.MetaEventTempo:
+				result = setMetaEventTempo(mEvent);
+				break;
+
+			case MUtil.MetaEventEndOfTrack:
+				result = " End of track ";
+				break;
+
+			case MUtil.MetaEventSequenceName:
+				result = " End of track ";
+				break;
+		}//end switch mEvent.getMetaEvent()
+
+		mEvent.setText(mEvent.getText() + result);
 	}// end defineMetaEvent
+
+	private String setMetaEventTimeSignature(MidiEvent mEvent)
+	{
+		if (mEvent.getMetaLength() < 2)
+		{
+			mEvent.setNumerator(0);
+			mEvent.setDenominator(4);
+		}
+		else if (mEvent.getMetaLength() >= 2 && mEvent.getMetaLength() < 4)
+		{
+			mEvent.setNumerator(mEvent.getValue()[0]);
+			mEvent.setDenominator((int) Math.pow(2, mEvent.getValue()[1]));
+		}
+		else
+		{
+			mEvent.setNumerator(mEvent.getValue()[0]);
+			mEvent.setDenominator((int) Math.pow(2, mEvent.getValue()[1]));
+		}
+
+		return mEvent.getNumerator() + " / " + mEvent.getDenominator();
+	}// end setMetaEventTimeSignature
+
+	private String setMetaEventTempo(MidiEvent mEvent) throws MidiException
+	{
+		if (mEvent.getMetaLength() != 3)
+		    throw new MidiException("ME Tempo len == " + mEvent.getMetaLength() + " != 3", file.getOffset());
+
+		mEvent.setTempo((mEvent.getValue()[0] << 16) | (mEvent.getValue()[1] << 8) | mEvent.getValue()[2]);
+
+		return " Tempo " + mEvent.getTempo();
+	}// end setMetaEventTempo
 
 	private void computePulsesSong(MidiFile omidiFile)
 	{
@@ -230,14 +290,4 @@ public class MidiFileReader
 	{
 		return null;
 	}// end splitChannels
-
-	private String setMetaEventTempo(MidiEvent mEvent) throws MidiException
-	{
-		return "";
-	}// end setMetaEventTempo
-
-	private String setMetaEventTimeSignature(MidiEvent mEvent)
-	{
-		return "";
-	}// end setMetaEventTimeSignature
 }//end MidiFileReader - class
