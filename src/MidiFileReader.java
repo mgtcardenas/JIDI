@@ -1,302 +1,278 @@
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.InputStream;
 
-public class MidiFileReader
+import org.herac.tuxguitar.io.midi.base.MidiEvent;
+import org.herac.tuxguitar.io.midi.base.MidiMessage;
+import org.herac.tuxguitar.io.midi.base.MidiSequence;
+import org.herac.tuxguitar.io.midi.base.MidiTrack;
+
+public class MidiFileReader implements MidiFileHeader
 {
-	private ByteFileReader file;
 
-	public MidiFileReader(String fileName) throws MidiException, IOException
+	public  static       boolean CANCEL_RUNNING_STATUS_ON_META_AND_SYSEX = true;
+
+	private static final int     STATUS_NONE                             = 0;
+	private static final int     STATUS_ONE_BYTE                         = 1;
+	private static final int     STATUS_TWO_BYTES                        = 2;
+	private static final int     STATUS_SYSEX                            = 3;
+	private static final int     STATUS_META                             = 4;
+
+	public MidiSequence getSequence(InputStream stream) throws MidiFileException, IOException
 	{
-		this.file = new ByteFileReader(fileName);
-	}// end MidiFileReader - constructor
-
-	public void readFile(MidiFile midiFile) throws MidiException
-	{
-		verifyHeader();
-
-		midiFile.setTrackMode      (file.readShort()          );
-		midiFile.setNumEventTracks(file.readShort());
-		midiFile.setQuarterNote(file.readShort());
-
-		MUtil.setQuarterNote(midiFile.getQuarterNote());
-
-		midiFile.setEvents(new ArrayList[midiFile.getNumEventTracks()]);
-		midiFile.setTracks         (new ArrayList<MidiTrack>());
-		midiFile.setTrackPerChannel(false                     );
-
-		computeTracks(midiFile);
-		//		computePulsesSong(midiFile);
-		//		verifyChannels(midiFile);
-		//		checkStartTimes(midiFile.getTracks());
-		//		readTimeSignature(midiFile);
-		//		roundDurations(midiFile);
-
-		file.empty();
-	}// end readFile
-
-	private void verifyHeader() throws MidiException
-	{
-		long length;
-
-		if (!file.readAscii(4).equals("MThd"))
-		    throw new MidiException("Doesn't start with MThd", 0);
-
-		length = file.readInt();
-
-		if (length != 6)
-		    throw new MidiException("Bad MThd header length", 4);
-	}// end verifyHeader
-
-	private void computeTracks(MidiFile omidiFile) throws MidiException
-	{
-		MidiTrack track;
-		for (int tracknum = 0; tracknum < omidiFile.getNumEventTracks(); tracknum++)
+		DataInputStream in = new DataInputStream(stream);
+		if (in.readInt() != HEADER_MAGIC)
 		{
-			omidiFile.getEvents()[tracknum] = readTrackEvents();
-			track                           = new MidiTrack(omidiFile.getEvents()[tracknum], tracknum);
-
-			track.setHasNotes((track.getNotes().size() > 0));
-			if (track.hasNotes())
-			    omidiFile.getTracks().add(track);
-		}//end for - tracknum
-	}// end computeTracks
-
-	/**
-	 * Parse a single Midi track into a list of MidiEvents
-	 *
-	 * Entering this function, the file offset should be
-	 * at the start of the MTrk header.
-	 *
-	 * Upon exiting, the file offset should be at the
-	 * start of the next MTrk header.
-	 */
-	private List<MidiEvent> readTrackEvents() throws MidiException
-	{
-		List<MidiEvent> result;
-		int             eventFlag, startTime, trackLength, trackEnd;
-
-		result    = new ArrayList<MidiEvent>();
-		startTime = 0;
-
-		if (!file.readAscii(4).equals("MTrk"))
-		    throw new MidiException("Bad MTrk header", file.getOffset() - 4);
-
-		trackLength = file.readInt();
-		trackEnd    = trackLength + file.getOffset();
-		eventFlag   = 0;
-
-		while (file.getOffset() < trackEnd)
-		{
-			// If the midi file is truncated here, we can still recover.
-			// Just return what we've parsed so far.
-			int       startOffset, deltaTIme, channel, peekEvent;
-			MidiEvent mEvent;
-
-			try
-			{
-				startOffset =  file.getOffset();
-				deltaTIme   =  file.readVarlen();
-				startTime   += deltaTIme;
-				peekEvent   =  file.peek();
-			}
-			catch (MidiException e)
-			{
-				return result;
-			}//end try - catch
-
-			mEvent = new MidiEvent();
-			mEvent.setDeltaTime(deltaTIme);
-			mEvent.setStartTime(startTime);
-			result.add(mEvent);
-
-			if (peekEvent >= MUtil.EventNoteOff)
-			{
-				mEvent.setHasEventflag(true);
-				eventFlag = file.readByte();
-			}//end if
-
-			channel = 0;
-
-			if (eventFlag < MUtil.UBYTE_MAX_VALUE)
-			    channel = eventFlag % 16;
-
-			mEvent.setEventFlag(eventFlag - channel);
-			switch (mEvent.getEventFlag())
-			{
-				case MUtil.EventNoteOff:
-					mEvent.setChannel(channel);
-					mEvent.setNoteNumber(file.readByte());
-					mEvent.setVolume(file.readByte());
-					mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
-					mEvent.setType("EventNoteOff"                                                                          );
-					break;
-
-				case MUtil.EventNoteOn:
-					mEvent.setChannel(channel);
-					mEvent.setNoteNumber(file.readByte());
-					mEvent.setVolume(file.readByte());
-					if (mEvent.getVolume() > 0)
-					{
-						mEvent.setText("ON Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
-						mEvent.setType("EventNoteOn"                                                                          );
-					}
-					else
-					{
-						mEvent.setEventFlag(0x80);
-						mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
-						mEvent.setType("EventNoteOff"                                                                          );
-					}//end if - else
-					break;
-
-				case MUtil.EventProgramChange:
-					mEvent.setChannel(channel);
-					mEvent.setInstrument(file.readByte());
-					mEvent.setText("PC Ch: " + channel + " : " + MUtil.INSTRUMENT_NAME.get(mEvent.getInstrument()));
-					mEvent.setType("EventProgramChange"                                                           );
-					break;
-
-				case MUtil.MetaEvent:
-					defineMetaEvent(mEvent);
-					mEvent.setType("MetaEvent");
-					break;
-				default:
-					throw new MidiException("Unknown event " + mEvent.getEventFlag(), file.getOffset() - 1);
-			}//end switch mEvent.getEventFlag()
-		}//end while
-
-		return result;
-	}// end readTrackEvents
-
-	private void defineMetaEvent(MidiEvent mEvent) throws MidiException
-	{
-		String result;
-
-		mEvent.setEventFlag(MUtil.MetaEvent);
-		mEvent.setMetaEvent (file.readByte  ()                         );
-		mEvent.setMetaLength(file.readVarlen()                         );
-		mEvent.setValue(file.readBytes(mEvent.getMetaLength()));
-		mEvent.setText("ME ");                                            //"" + EVENT_TYPE.MetaEvent; //+" " + mEvent.MetaEvent;
-		mEvent.setMeta      (MUtil.META_NAME.get(mEvent.getMetaEvent()));
-		result = "";
-
-		switch (mEvent.getMetaEvent())
-		{
-			case MUtil.MetaEventTimeSignature:
-				result = " TimeSignature " + setMetaEventTimeSignature(mEvent);
-				break;
-
-			case MUtil.MetaEventTempo:
-				result = setMetaEventTempo(mEvent);
-				break;
-
-			case MUtil.MetaEventEndOfTrack:
-				result = " End of track ";
-				break;
-
-			case MUtil.MetaEventSequenceName:
-				result = " SequenceName " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
-				break;
-		}//end switch mEvent.getMetaEvent()
-
-		mEvent.setText(mEvent.getText() + result);
-	}// end defineMetaEvent
-
-	private String setMetaEventTimeSignature(MidiEvent mEvent)
-	{
-		if (mEvent.getMetaLength() < 2)
-		{
-			mEvent.setNumerator(0);
-			mEvent.setDenominator(4);
+			throw new MidiFileException("not a MIDI file: wrong header magic");
 		}
-		else if (mEvent.getMetaLength() >= 2 && mEvent.getMetaLength() < 4)
+		int headerLength = in.readInt();
+		if (headerLength < HEADER_LENGTH)
 		{
-			mEvent.setNumerator(mEvent.getValue()[0]);
-			mEvent.setDenominator((int) Math.pow(2, mEvent.getValue()[1]));
+			throw new MidiFileException("corrupt MIDI file: wrong header length");
+		}
+		int type = in.readShort();
+		if (type < 0 || type > 2)
+		{
+			throw new MidiFileException("corrupt MIDI file: illegal type");
+		}
+		if (type == 2)
+		{
+			throw new MidiFileException("this implementation doesn't support type 2 MIDI files");
+		}
+		int trackCount = in.readShort();
+		if (trackCount <= 0)
+		{
+			throw new MidiFileException("corrupt MIDI file: number of tracks must be positive");
+		}
+		if (type == 0 && trackCount != 1)
+		{
+			throw new MidiFileException("corrupt MIDI file:  type 0 files must contain exactely one track");
+		}
+		float divisionType = -1.0F;
+		int   resolution   = -1;
+		int   division     = in.readUnsignedShort();
+		if ((division & 0x8000) != 0)
+		{
+			int frameType = -((division >>> 8) & 0xFF);
+			if (frameType == 24)
+			{
+				divisionType = MidiSequence.SMPTE_24;
+			}
+			else if (frameType == 25)
+			{
+				divisionType = MidiSequence.SMPTE_25;
+			}
+			else if (frameType == 29)
+			{
+				divisionType = MidiSequence.SMPTE_30DROP;
+			}
+			else if (frameType == 30)
+			{
+				divisionType = MidiSequence.SMPTE_30;
+			}
+			else
+			{
+				throw new MidiFileException("corrupt MIDI file: illegal frame division type");
+			}
+			resolution = division & 0xff;
 		}
 		else
 		{
-			mEvent.setNumerator(mEvent.getValue()[0]);
-			mEvent.setDenominator((int) Math.pow(2, mEvent.getValue()[1]));
+			divisionType = MidiSequence.PPQ;
+			resolution   = division & 0x7fff;
 		}
 
-		return mEvent.getNumerator() + " / " + mEvent.getDenominator();
-	}// end setMetaEventTimeSignature
+		in.skip(headerLength - HEADER_LENGTH);
 
-	private String setMetaEventTempo(MidiEvent mEvent) throws MidiException
+		MidiSequence sequence = new MidiSequence(divisionType, resolution);
+		for (int i = 0; i < trackCount; i++)
+		{
+			MidiTrack track = new MidiTrack();
+			sequence.addTrack(track);
+			readTrack(in, track);
+		}
+
+		in.close();
+
+		return sequence;
+	}
+
+	private void readTrack(DataInputStream in, MidiTrack track) throws MidiFileException, IOException
 	{
-		int firstByte, secondByte, thirdByte, tempo;
+		while (true)
+		{
+			if (in.readInt() == TRACK_MAGIC)
+			{
+				break;
+			}
+			int chunkLength = in.readInt();
+			if (chunkLength % 2 != 0)
+			{
+				chunkLength++;
+			}
+			in.skip(chunkLength);
+		}
 
-		if (mEvent.getMetaLength() != 3)
-		    throw new MidiException("ME Tempo len == " + mEvent.getMetaLength() + " != 3", file.getOffset());
+		MidiTrackReaderHelper helper = new MidiTrackReaderHelper(0, in.readInt(), -1);
+		while (helper.remainingBytes > 0)
+		{
+			helper.ticks += readVariableLengthQuantity(in, helper);
+			MidiEvent event = readEvent(in, helper);
+			if (event != null)
+			{
+				track.add(event);
+			}
+		}
+	}
 
-		firstByte  = Byte.toUnsignedInt(mEvent.getValue()[0]);
-		secondByte = Byte.toUnsignedInt(mEvent.getValue()[1]);
-		thirdByte  = Byte.toUnsignedInt(mEvent.getValue()[2]);
-
-		tempo = (firstByte << 16 | secondByte << 8 | thirdByte);
-
-		mEvent.setTempo(tempo);
-
-		return " Tempo " + mEvent.getTempo();
-	}// end setMetaEventTempo
-
-	private void computePulsesSong(MidiFile omidiFile)
+	private static MidiEvent readEvent(DataInputStream in, MidiTrackReaderHelper helper) throws MidiFileException, IOException
 	{
+		int     statusByte           = readUnsignedByte(in, helper);
+		int     savedByte            = 0;
+		boolean runningStatusApplies = false;
 
-	}// end computePulsesSong
+		if (statusByte < 0x80)
+		{
+			if (helper.runningStatusByte != -1)
+			{
+				runningStatusApplies = true;
+				savedByte            = statusByte;
+				statusByte           = helper.runningStatusByte;
+			}
+			else
+			{
+				throw new MidiFileException("corrupt MIDI file: status byte missing");
+			}
+		}
 
-	private void verifyChannels(MidiFile omidiFile)
-	{
+		int type = getType(statusByte);
+		if (type == STATUS_ONE_BYTE)
+		{
+			int data = 0;
+			if (runningStatusApplies)
+			{
+				data = savedByte;
+			}
+			else
+			{
+				data                     = readUnsignedByte(in, helper);
+				helper.runningStatusByte = statusByte;
+			}
 
-	}// end verifyChannels
+			return new MidiEvent(MidiMessage.shortMessage((statusByte & 0xF0), (statusByte & 0x0F), data), helper.ticks);
+		}
+		else if (type == STATUS_TWO_BYTES)
+		{
+			int data1 = 0;
+			if (runningStatusApplies)
+			{
+				data1 = savedByte;
+			}
+			else
+			{
+				data1                    = readUnsignedByte(in, helper);
+				helper.runningStatusByte = statusByte;
+			}
 
-	/**
-	 * Check that the MidiNote start times are in increasing order.
-	 * This is for debugging purposes.
-	 */
-	private void checkStartTimes(List<MidiTrack> tracks) throws MidiException
-	{
+			return new MidiEvent(MidiMessage.shortMessage((statusByte & 0xF0), (statusByte & 0x0F), data1, readUnsignedByte(in, helper)), helper.ticks);
+		}
+		else if (type == STATUS_SYSEX)
+		{
+			if (CANCEL_RUNNING_STATUS_ON_META_AND_SYSEX)
+			{
+				helper.runningStatusByte = -1;
+			}
+			int    dataLength = (int) readVariableLengthQuantity(in, helper);
+			byte[] data       = new byte[dataLength];
+			for (int i = 0; i < dataLength; i++)
+			{
+				data[i] = (byte) readUnsignedByte(in, helper);
+			}
+		}
+		else if (type == STATUS_META)
+		{
+			if (CANCEL_RUNNING_STATUS_ON_META_AND_SYSEX)
+			{
+				helper.runningStatusByte = -1;
+			}
+			int    typeByte   = readUnsignedByte(in, helper);
+			int    dataLength = (int) readVariableLengthQuantity(in, helper);
+			byte[] data       = new byte[dataLength];
+			for (int i = 0; i < dataLength; i++)
+			{
+				data[i] = (byte) readUnsignedByte(in, helper);
+			}
 
-	}// end checkStartTimes
+			return new MidiEvent(MidiMessage.metaMessage(typeByte, data), helper.ticks);
+		}
 
-	private void readTimeSignature(MidiFile omidiFile) throws MidiException
-	{
-
-	}// end readTimeSignature
-
-	/**
-	 * We want note durations to span up to the next note in general.
-	 * The sheet music looks nicer that way. In contrast, sheet music
-	 * with lots of 16th/32nd notes separated by small rests doesn't
-	 * look as nice. Having nice looking sheet music is more important
-	 * than faithfully representing the Midi File data.
-	 *
-	 * Therefore, this function rounds the duration of MidiNotes up to
-	 * the next note where possible.
-	 */
-	public static void roundDurations(MidiFile midiFile)
-	{
-
-	}// end RoundDuration
-
-	/**
-	 * Return true if this track contains multiple channels.
-	 * If a MidiFile contains only one track, and it has multiple channels,
-	 * then we treat each channel as a separate track.
-	 */
-	private boolean hasMultipleChannels(MidiTrack track)
-	{
-		return false;
-	}// end hasMultipleChannels
-
-	/**
-	 * Split the given track into multiple tracks, separating each
-	 * channel into a separate track.
-	 */
-	private List<MidiTrack> splitChannels(MidiFile file, List<MidiEvent> events)
-	{
 		return null;
-	}// end splitChannels
+	}
+
+	private static int getType(int statusByte)
+	{
+		if (statusByte < 0xf0)
+		{
+			int command = statusByte & 0xf0;
+			if (command == 0x80 || command == 0x90 || command == 0xa0 || command == 0xb0 || command == 0xe0)
+			{
+				return STATUS_TWO_BYTES;
+			}
+			else if (command == 0xc0 || command == 0xd0)
+			{
+				return STATUS_ONE_BYTE;
+			}
+			return STATUS_NONE;
+		}
+		else if (statusByte == 0xf0 || statusByte == 0xf7)
+		{
+			return STATUS_SYSEX;
+		}
+		else if (statusByte == 0xff)
+		{
+			return STATUS_META;
+		}
+		else
+		{
+			return STATUS_NONE;
+		}
+	}
+
+	public static long readVariableLengthQuantity(DataInputStream in, MidiTrackReaderHelper helper) throws MidiFileException, IOException
+	{
+		int  count = 0;
+		long value = 0;
+		while (count < 4)
+		{
+			int data = readUnsignedByte(in, helper);
+			count++;
+			value <<= 7;
+			value |=  (data & 0x7f);
+			if (data < 128)
+			{
+				return value;
+			}
+		}
+		throw new MidiFileException("not a MIDI file: unterminated variable-length quantity");
+	}
+
+	public static int readUnsignedByte(DataInputStream dataInputStream, MidiTrackReaderHelper helper) throws IOException
+	{
+		helper.remainingBytes--;
+		return dataInputStream.readUnsignedByte();
+	}
+
+	private class MidiTrackReaderHelper
+	{
+		protected long ticks             = 0;
+		protected long remainingBytes;
+		protected int  runningStatusByte;
+
+		protected MidiTrackReaderHelper(long ticks, long remainingBytes, int runningStatusByte)
+		{
+			this.ticks             = ticks;
+			this.remainingBytes    = remainingBytes;
+			this.runningStatusByte = runningStatusByte;
+		}
+	}
 }//end MidiFileReader - class
