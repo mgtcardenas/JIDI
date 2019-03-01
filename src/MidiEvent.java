@@ -1,262 +1,328 @@
-/**
- * @class MidiEvent
- * A MidiEvent represents a single event (such as EventNoteOn) in the
- * Midi file. It includes the delta time of the event.
- */
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.*;
+
 public class MidiEvent
 {
-	private String  text;
-	private String  type;         // Used to be EVENT_TYPE
-	private String  meta;         // Used to be META_EVENT
-	private int     deltaTime;    // The time between the previous event and this on
-	private int     startTime;    // The absolute time this event occurs
-	private int     tempo;        // The tempo, for tempo meta events
-	private int     metaLength;   // The metaevent length
-	private int     pitchBend;    // The pitch bend value
-	private boolean hasEventflag; // False if this is using the previous eventflag
-	private int     eventFlag;    // NoteOn, noteOff, etc. Full list is in class MidiFile
-	private int     channel;      // The channel this event occurs on
-	private int     noteNumber;   // The note number (as in C4, D3, Bb5, ...)
-	private int     volume;       // The volume of the note aka velocity
-	private int     instrument;   // The instrument
-	private int     keyPressure;  // The key pressure
-	private int     chanPressure; // The channel pressure
-	private int     controlNum;   // The controller number
-	private int     controlValue; // The controller value
-	private int     numerator;    // The numerator, for TimeSignature meta events
-	private int     denominator;  // The denominator, for TimeSignature meta events
-	private int     metaEvent;    // The metaevent, used if eventflag is metaEvent
-	private byte[]  value;        // The raw byte value, for Sysex and meta events; SHOULD THIS BE BYTE ARRAY OR INT ARRAY?
 
-	public MidiEvent()
+	// 'Key' = 'NoteNumber'
+	// sequenceName, instrumentName, lyrics, marker, cuePoint, deviceName,
+	// midiChannelPrefix van en texto
+	// ¿Cómo calculas StartTime (the absolute time this event occurs? eso no viene
+	// en la guia)
+	// Volume es Velocity
+	// Instrument = programNum del evento C
+	// MIDIPort sólo es un byte. Pero como 01 y luego un byte. Siempre se lee un 
+	// LQ
+	// y luego VLQ-bytes
+	// En Time Signature sólo importan el numerador y denominador. sharpsFlatsNum,
+	// majorMinorKey tampoco importan
+	// MIDIChannelPrefix y MIDIPort se leen igual
+
+	// #region meta-events
+	public short  sequenceNumber;
+	public String text;
+	public String copyrightNotice;
+	public String programName;
+	public byte   midiChannelPrefix;
+	// #endregion meta-events
+
+	// public byte Notenumber; // The note number
+	// public byte Volume; // The volume of the note
+	// public byte Instrument; // The instrument
+
+	private static int   sysexLength;
+
+	public         int   deltaTime;    // The time between the previous event and this on
+	public         int   startTime;
+	public         int   tempo;
+	private        int   metaLength;
+
+	public         short pitchBend;    // The pitch bend value [public ushort PitchBend]
+
+	public         byte  eventFlag;    // The type of event
+	public         byte  channel;      // The channel this event occurs on
+	public         byte  key;
+	public         int   velocity;     // es lo mismo que volume
+
+	public         byte  keyPressure;  // The key pressure
+	public         byte  chanPressure; // The channel pressure
+	public         byte  controlNum;   // The controller number
+	public         byte  controlValue; // The controller value
+	public         byte  programNum;   // Used to change the instrument (or sound) to be played when a note-on message
+	// is received
+
+	public byte   Numerator;     // The numerator, for TimeSignature meta events
+	public byte   Denominator;   // The denominator, for TimeSignature meta events
+	public byte   metaEvent;     // The metaevent, used if eventflag is MetaEvent
+	public byte   sharpsFlatsNum;
+	public byte   majorMinorKey;
+	public byte[] readText;
+	public byte[] value;
+
+	public static int unsignByte(byte b)
 	{
+		return b & 0xFF;   // Esto regresa un entero por default (&)
+	}// end unsignByte
+
+	public static boolean msbEqualsOne(byte b)
+	{
+		if (128 == (b & 0x80))
+		    return true;
+
+		return false;
+	}// end msbEqualsOne
+
+	public static int getVLQ(RandomAccessFile raf) throws IOException
+	{
+
+		String result    = "";
+		String vlqString = "";
+		byte   vlq       = raf.readByte();
+
+		while (msbEqualsOne(vlq))
+		{
+			vlqString = String.format("%8s", Integer.toBinaryString(vlq & 0x7F)).replace(' ', '0');
+			result    = result + vlqString.substring(1);
+			vlq       = raf.readByte();
+		} // end while
+
+		vlqString = String.format("%8s", Integer.toBinaryString(vlq & 0x7F)).replace(' ', '0');
+		result    = result + vlqString.substring(1);
+
+		return Integer.parseInt(result, 2);
+	}// end getVLQ
+
+	public static byte getMSHex(byte b)
+	{
+		return (byte) (b & 0xF0);
+	}// end getMSB
+
+	public static byte getLSHex(byte b)
+	{
+		return (byte) (b & 0x0F);
+	}// end getMSB
+
+	public MidiEvent(RandomAccessFile raf) throws IOException
+	{
+		this.deltaTime = getVLQ(raf);
+		byte b = raf.readByte();
+
+		switch (getMSHex(b))
+		{
+			case (byte) 0x80: // Note Off 8n kk vv
+				this.eventFlag = getMSHex(b);
+				this.channel   = getLSHex(b);
+				this.key       = raf.readByte();
+				this.velocity  = unsignByte(raf.readByte());
+				break;
+			case (byte) 0x90:
+				this.eventFlag = getMSHex(b);
+				this.channel   = getLSHex(b);
+				this.key       = raf.readByte();
+				this.velocity  = unsignByte(raf.readByte());
+				break;
+			case (byte) 0xA0:
+				this.eventFlag   = getMSHex(b);
+				this.channel     = getLSHex(b);
+				this.key         = raf.readByte();
+				this.keyPressure = raf.readByte();
+				break;
+			case (byte) 0xB0:
+				this.eventFlag    = getMSHex(b);
+				this.channel      = getLSHex(b);
+				this.controlNum   = raf.readByte();
+				this.controlValue = raf.readByte();
+				break;
+			case (byte) 0xC0:
+				this.eventFlag  = getMSHex(b);
+				this.channel    = getLSHex(b);
+				this.programNum = raf.readByte();
+				break;
+			case (byte) 0xD0:
+				this.eventFlag    = getMSHex(b);
+				this.channel      = getLSHex(b);
+				this.chanPressure = raf.readByte();
+				break;
+			case (byte) 0xE0:
+				this.eventFlag = getMSHex(b);
+				this.channel   = getLSHex(b);
+				raf.skipBytes(2);
+				break;
+			case (byte) 0xF0:
+
+				switch (getLSHex(b))
+				{
+					case (byte) 0x00:
+						this.eventFlag = b;
+						sysexLength    = getVLQ(raf);
+						raf.skipBytes(sysexLength);
+						break;
+					case (byte) 0x07:
+						this.eventFlag = b;
+						sysexLength    = getVLQ(raf);
+						raf.skipBytes(sysexLength);
+						break;
+					case (byte) 0x0F:
+						this.eventFlag = b;
+						byte metaType = raf.readByte();
+						this.metaEvent = metaType;
+
+						switch (metaType)
+						{
+							case (byte) 0x00:
+								System.out.println("Sequence");
+								raf.skipBytes(1);
+								this.sequenceNumber = raf.readShort();
+								break;
+
+							case (byte) 0x01:
+								System.out.println("Text");
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.text = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x02:
+								System.out.println("Copyright");
+								metaLength      = getVLQ(raf);
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.copyrightNotice = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x03:
+								System.out.println("SequenceName");
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.text = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x04:
+								System.out.println("Instrument");
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.text = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x05:
+								System.out.println("Lyric");
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.text = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x06:
+								System.out.println("Marker");
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.text = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x07:
+								System.out.println("CuePoint");
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.text = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x08:
+								System.out.println("ProgramName");
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.programName = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x09:
+								System.out.println("DeviceName");
+								this.metaLength = getVLQ(raf);
+								this.readText   = new byte[metaLength];
+								raf.read(this.readText);
+								this.text = new String(this.readText, "UTF-8");
+								break;
+
+							case (byte) 0x20:
+								System.out.println("MIDIChannelPrefix");
+								raf.skipBytes(1);
+								this.midiChannelPrefix = raf.readByte();
+								break;
+
+							case (byte) 0x21:
+								System.out.println("MIDIPort");
+								break;
+
+							case (byte) 0x2F:
+								System.out.println("EndOfTrack");
+								raf.skipBytes(1);
+								break;
+
+							case (byte) 0x51:
+								System.out.println("Tempo");
+								raf.skipBytes(1);
+								this.value = new byte[3];
+								raf.read(this.value);
+								// NEED TO CHANGE THIS CAUSE THERE IS AN UNDERFLOW
+								// MUST USE BIGINTEGER IN THAT CASE
+								// TEST IT IN ANOTHER FILE
+								BigInteger bi = new BigInteger(value);
+								// raf.skipBytes(3);
+								this.tempo = bi.intValue();
+								break;
+
+							case (byte) 0x54:
+								System.out.println("SMPTEOffset");
+								raf.skipBytes(6);
+								break;
+
+							case (byte) 0x58:
+								System.out.println("TimeSignature");
+								raf.skipBytes(1);
+								this.Numerator   = raf.readByte();
+								this.Denominator = raf.readByte();
+								raf.skipBytes(2);
+								break;
+
+							case (byte) 0x59:
+								System.out.println("KeySignature");
+								raf.skipBytes(1);
+								this.sharpsFlatsNum = raf.readByte();
+								this.majorMinorKey  = raf.readByte();
+								break;
+
+							case (byte) 0x7F:
+								System.out.println("SequencerSpecificEvent");
+								this.metaLength = getVLQ(raf);
+								raf.skipBytes(this.metaLength);
+								break;
+
+							default:
+								System.out.println("Unrecognized Event Error");
+								break;
+						}// end switch
+						break;
+
+					default:
+						System.out.println("Unrecognized Event Error");
+						break;
+				}// end switch
+		}// end switch
 	}// end MidiEvent - constructor
 
-	//region Getters & Setters
-	public String getText()
-	{
-		return text;
-	}//end getText
-
-	public void setText(String text)
-	{
-		this.text = text;
-	}//end setText
-
-	public String getType()
-	{
-		return type;
-	}//end getType
-
-	public void setType(String type)
-	{
-		this.type = type;
-	}//end setType
-
-	public String getMeta()
-	{
-		return meta;
-	}//end getMeta
-
-	public void setMeta(String meta)
-	{
-		this.meta = meta;
-	}//end setMeta
-
-	public int getDeltaTime()
-	{
-		return deltaTime;
-	}//end getDeltaTime
-
-	public void setDeltaTime(int deltaTime)
-	{
-		this.deltaTime = deltaTime;
-	}//end setDeltaTime
-
-	public int getStartTime()
-	{
-		return startTime;
-	}//end getStartTime
-
-	public void setStartTime(int startTime)
-	{
-		this.startTime = startTime;
-	}//end setStartTime
-
-	public int getTempo()
-	{
-		return tempo;
-	}//end getTempo
-
-	public void setTempo(int tempo)
-	{
-		this.tempo = tempo;
-	}//end setTempo
-
-	public int getMetaLength()
-	{
-		return metaLength;
-	}//end getMetaLength
-
-	public void setMetaLength(int metaLength)
-	{
-		this.metaLength = metaLength;
-	}//end setMetaLength
-
-	public int getPitchBend()
-	{
-		return pitchBend;
-	}//end getPitchBend
-
-	public void setPitchBend(int pitchBend)
-	{
-		this.pitchBend = pitchBend;
-	}//end setPitchBend
-
-	public boolean hasEventflag()
-	{
-		return hasEventflag;
-	}//end hasEventFlag
-
-	public void setHasEventflag(boolean hasEventflag)
-	{
-		this.hasEventflag = hasEventflag;
-	}//end setHasEventflag
-
-	public int getEventFlag()
-	{
-		return eventFlag;
-	}//end getEventFlag
-
-	public void setEventFlag(int eventFlag)
-	{
-		this.eventFlag = eventFlag;
-	}//end setEventFlag
-
-	public int getChannel()
-	{
-		return channel;
-	}//end getChannel
-
-	public void setChannel(int channel)
-	{
-		this.channel = channel;
-	}//end setChannel
-
-	public int getNoteNumber()
-	{
-		return noteNumber;
-	}//end getNoteNumber
-
-	public void setNoteNumber(int noteNumber)
-	{
-		this.noteNumber = noteNumber;
-	}//end setNoteNumber
-
-	public int getVolume()
-	{
-		return volume;
-	}//end getVolume
-
-	public void setVolume(int volume)
-	{
-		this.volume = volume;
-	}//end setVolume
-
-	public int getInstrument()
-	{
-		return instrument;
-	}//end getInstrument
-
-	public void setInstrument(int instrument)
-	{
-		this.instrument = instrument;
-	}//end setInstrument
-
-	public int getKeyPressure()
-	{
-		return keyPressure;
-	}//end getKeyPressure
-
-	public void setKeyPressure(int keyPressure)
-	{
-		this.keyPressure = keyPressure;
-	}//end setKeyPressure
-
-	public int getChanPressure()
-	{
-		return chanPressure;
-	}//end getChanPressure
-
-	public void setChanPressure(int chanPressure)
-	{
-		this.chanPressure = chanPressure;
-	}//end setChanPressure
-
-	public int getControlNum()
-	{
-		return controlNum;
-	}//end getControlNum
-
-	public void setControlNum(int controlNum)
-	{
-		this.controlNum = controlNum;
-	}//end setControlNum
-
-	public int getControlValue()
-	{
-		return controlValue;
-	}//end getControlValue
-
-	public void setControlValue(int controlValue)
-	{
-		this.controlValue = controlValue;
-	}//end setControlValue
-
-	public int getNumerator()
-	{
-		return numerator;
-	}//end getNumerator
-
-	public void setNumerator(int numerator)
-	{
-		this.numerator = numerator;
-	}//end setNumerator
-
-	public int getDenominator()
-	{
-		return denominator;
-	}//end getDenominator
-
-	public void setDenominator(int denominator)
-	{
-		this.denominator = denominator;
-	}//end setDenominator
-
-	public int getMetaEvent()
-	{
-		return metaEvent;
-	}//end getMetaEvent
-
-	public void setMetaEvent(int metaEvent)
-	{
-		this.metaEvent = metaEvent;
-	}//end setMetaEvent
-
-	public byte[] getValue()
-	{
-		return value;
-	}//end getValue
-
-	public void setValue(byte[] value)
-	{
-		this.value = value;
-	}//end setValue
-	//endregion Getters & Setters
-
 	@Override
-	public String toString()
+	         public String toString()
 	{
-		return text + " Start : " + startTime + " Delta : " + deltaTime;
-	}// end toString
-}//end MidiEvent - class
+		return "Delta Time: " + this.deltaTime;
+	}// end toString - override
+}// end MidiEvent - class
+
+// "\n" + Arrays.toString(data)

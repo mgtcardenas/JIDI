@@ -1,0 +1,30 @@
+NoteOff 		    = 0x80,
+NoteOn 		        = 0x90,
+KeyPressure 	    = 0xA0,//POLYPHONIC AFTER TOUCH
+ControlChange 	    = 0xB0,//FX,VIBRATO,SWITCHES,DEPTH,LOW_RES
+ProgramChange 	    = 0xC0,//Voice Number(INSTRUMENT)
+ChannelAfterTouch 	= 0xD0,//
+PitchBend 		    = 0xE0,
+SysexEvent1 	    = 0xF0,
+SysexEvent2 	    = 0xF7,
+MetaEvent 		    = 0xFF
+
+    MetaEvent
+        Sequence            	= 0x0,
+        Text                	= 0x1,
+        Copyright           	= 0x2,
+        SequenceName        	= 0x3,
+        Instrument          	= 0x4,
+        Lyric               	= 0x5,
+        Marker              	= 0x6,
+        CuePoint            	= 0x7,
+        ProgramName         	= 0x8,
+        DeviceName          	= 0x9,
+        MIDIChannelPrefix   	= 0x20,
+        MIDIPort            	= 0x21,
+        EndOfTrack          	= 0x2F,
+        Tempo               	= 0x51,
+        SMPTEOffset         	= 0x54,
+        TimeSignature       	= 0x58,
+        KeySignature        	= 0x59,
+        SequencerSpecificEvent = 0x7F,
