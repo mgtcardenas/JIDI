@@ -9,7 +9,7 @@ import java.util.List;
  * - The first instrument used in the track.
  *
  * For each NoteOn event in the midi file, a new MidiNote is created
- * and added to the track, using the AddNote() method.
+ * and added to the track, using the addNote() method.
  *
  * The noteOff() method is called when a noteOff event is encountered,
  * in order to update the duration of the MidiNote.

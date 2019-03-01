@@ -61,7 +61,7 @@ public class MidiFile
 
 		mfr           = new MidiFileReader(fileName);
 
-		mfr.readFile(this);
+		mfr.readFile(this); // This method initiates flow of operations
 	}//end MidiFile - constructor
 
 	//region Getters & Setters

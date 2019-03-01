@@ -143,7 +143,8 @@ public class ByteFileReader
 	/**
 	 * Read a variable-length integer (1 to 4 bytes). The integer ends
 	 * when you encounter a byte that doesn't have the 8th bit set
-	 * (a byte less than 0x80).
+	 * (a byte less than 0x80). Max value allowed in midi is ‭268,435,455
+	 * but 2,147,483,647‬ is a signed ints max value
 	 */
 	public int readVarlen() throws MidiException
 	{
@@ -166,5 +167,4 @@ public class ByteFileReader
 
 		return result;
 	}// end readVarlen
-
 }//end ByteFileReader - class

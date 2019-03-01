@@ -36,6 +36,10 @@ public class MidiFileReader
 		file.empty();
 	}// end readFile
 
+	/**
+	 * Makes sure that the header begins with "MThd" and that length of header is 6
+	 * @throws MidiException - if any of the two conditions above are false
+	 */
 	private void verifyHeader() throws MidiException
 	{
 		long length;
@@ -49,6 +53,11 @@ public class MidiFileReader
 		    throw new MidiException("Bad MThd header length", 4);
 	}// end verifyHeader
 
+	/**
+	 * For each of the event tracks (MTrk) that this file says it has,
+	 * @param omidiFile
+	 * @throws MidiException
+	 */
 	private void computeTracks(MidiFile omidiFile) throws MidiException
 	{
 		MidiTrack track;
@@ -89,8 +98,7 @@ public class MidiFileReader
 
 		while (file.getOffset() < trackEnd)
 		{
-			// If the midi file is truncated here, we can still recover.
-			// Just return what we've parsed so far.
+			// If the midi file is truncated here, we can still recover. Just return what we've parsed so far.
 			int       startOffset, deltaTIme, channel, peekEvent;
 			MidiEvent mEvent;
 
@@ -235,7 +243,7 @@ public class MidiFileReader
 		secondByte = Byte.toUnsignedInt(mEvent.getValue()[1]);
 		thirdByte  = Byte.toUnsignedInt(mEvent.getValue()[2]);
 
-		tempo = (firstByte << 16 | secondByte << 8 | thirdByte);
+		tempo      = (firstByte << 16 | secondByte << 8 | thirdByte);
 
 		mEvent.setTempo(tempo);
 
