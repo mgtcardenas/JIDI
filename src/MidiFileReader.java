@@ -382,7 +382,6 @@ public class MidiFileReader
 	}// end setMetaEventTempo
 	//endregion Regarding Tracks
 
-	//TODO: Verify that this works
 	private void computePulsesSong(MidiFile omidiFile)
 	{
 		for (int ev = 0; ev < omidiFile.getEvents().length; ev++)
@@ -480,8 +479,6 @@ public class MidiFileReader
 	}// end splitChannels
 	//endregion Regarding Channels
 
-	//TODO: Verify that this works
-
 	/**
 	 * Check that the MidiNote start times are in increasing order.
 	 * This is for debugging purposes.
@@ -505,7 +502,6 @@ public class MidiFileReader
 		}//end for - t
 	}// end checkStartTimes
 
-	//TODO: Verify that this works
 	private void readTimeSignature(MidiFile omidiFile) throws MidiException
 	{
 		// Determine the time signature
@@ -538,8 +534,6 @@ public class MidiFileReader
 
 		omidiFile.setTimeSig(new TimeSignature(numer, denom, omidiFile.getQuarterNote(), tempo));
 	}// end readTimeSignature
-
-	//TODO: Verify that this works
 
 	/**
 	 * We want note durations to span up to the next note in general.

@@ -4,7 +4,7 @@
  * - The time signature of the song, such as 4/4, 3/4, or 6/8 time, and
  * - The number of pulses per quarter note
  * - The number of microseconds per quarter note
- * <p>
+ *
  * In midi files, all time is measured in "pulses". Each note has
  * a start time (measured in pulses), and a duration (measured in
  * pulses). This class is used mainly to convert pulse durations
@@ -19,12 +19,6 @@ public class TimeSignature
 	private int tempo;       // Number of microseconds per quarter note
 	private int bpm;
 
-	//TODO: Verify that this works
-
-	/**
-	 * Create a new time signature, with the given numerator,
-	 * denominator, pulses per quarter note, and tempo.
-	 */
 	public TimeSignature(int numerator, int denominator, int quarternote, int tempo) throws MidiException
 	{
 		int beat;
@@ -115,7 +109,8 @@ public class TimeSignature
 	//TODO: Verify that this works
 
 	/**
-	 * Given a duration in pulses, return the closest note duration.
+	 * @param duration - the duration in pulses
+	 * @return - the closest note duration
 	 */
 	public NoteDuration getNoteDuration(int duration)
 	{
@@ -160,7 +155,9 @@ public class TimeSignature
 	}// end getNoteDuration
 
 	/**
-	 * Return which measure the given time (in pulses) belongs to.
+	 *
+	 * @param time - the time in pulses
+	 * @return - which measure the given time belongs to
 	 */
 	public int getMeasure(int time)
 	{
@@ -170,8 +167,9 @@ public class TimeSignature
 	//TODO: Verify that this works
 
 	/**
-	 * Convert a note duration into a stem duration. Dotted durations
-	 * are converted into their non-dotted equivalents.
+	 * Dotted durations are converted into their non-dotted equivalents
+	 * @param dur - a note duration
+	 * @return - a stem duration converted from a note duration
 	 */
 	public static NoteDuration getStemDuration(NoteDuration dur)
 	{
@@ -188,7 +186,9 @@ public class TimeSignature
 	//TODO: Verify that this works
 
 	/**
-	 * Return the time period (in pulses) the the given duration spans
+	 *
+	 * @param dur - a note duration
+	 * @return - the time period in pulses the given duration spans
 	 */
 	public int durationToTime(NoteDuration dur)
 	{

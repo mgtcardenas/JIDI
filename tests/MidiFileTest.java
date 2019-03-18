@@ -27,6 +27,8 @@ public class MidiFileTest
 		assertEquals(1, mf.getTrackMode());
 		assertEquals(2, mf.getNumEventTracks());
 		assertEquals(384, mf.getQuarterNote());
+		assertEquals(1536,mf.getTotalPulses()); // has correct number of total pulses
+		assertEquals(2,mf.getNumEventTracks()); // correctly identifies num of event tracks
 	}//end readsHeaderCorrectly
 
 	@Test
@@ -37,7 +39,7 @@ public class MidiFileTest
 		assertEquals(4,mf.getEvents()[0].get(0).getNumerator());
 		assertEquals(4,mf.getEvents()[0].get(0).getDenominator());
 	}//end hasCorrectTimeSignature
-	
+
 	@Test
 	void hasCorrectTempo()
 	{
