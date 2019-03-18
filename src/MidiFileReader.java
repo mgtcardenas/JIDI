@@ -131,16 +131,9 @@ public class MidiFileReader
 			    channel = eventFlag % 16;
 
 			mEvent.setEventFlag(eventFlag - channel);
+			//TODO: Fill the rest of the cases
 			switch (mEvent.getEventFlag())
 			{
-				case MUtil.EventNoteOff:
-					mEvent.setChannel(channel);
-					mEvent.setNoteNumber(file.readByte());
-					mEvent.setVolume(file.readByte());
-					mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
-					mEvent.setType("EventNoteOff"                                                                          );
-					break;
-
 				case MUtil.EventNoteOn:
 					mEvent.setChannel(channel);
 					mEvent.setNoteNumber(file.readByte());
@@ -156,6 +149,14 @@ public class MidiFileReader
 						mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
 						mEvent.setType("EventNoteOff"                                                                          );
 					}//end if - else
+					break;
+
+				case MUtil.EventNoteOff:
+					mEvent.setChannel(channel);
+					mEvent.setNoteNumber(file.readByte());
+					mEvent.setVolume(file.readByte());
+					mEvent.setText("OFF Ch: " + channel + " key: " + mEvent.getNoteNumber() + " vel: " + mEvent.getVolume());
+					mEvent.setType("EventNoteOff"                                                                          );
 					break;
 
 				case MUtil.EventProgramChange:
@@ -189,6 +190,7 @@ public class MidiFileReader
 		mEvent.setMeta      (MUtil.META_NAME.get(mEvent.getMetaEvent()));
 		result = "";
 
+		//TODO: Fill the rest of the cases
 		switch (mEvent.getMetaEvent())
 		{
 			case MUtil.MetaEventTimeSignature:

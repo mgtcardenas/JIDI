@@ -29,5 +29,20 @@ public class MidiFileTest
 		assertEquals(384, mf.getQuarterNote());
 	}//end readsHeaderCorrectly
 
-	//TODO: Create test for the whole MIDI File fields values
+	@Test
+	void hasCorrectTimeSignature()
+	{
+		assertEquals(88,mf.getEvents()[0].get(0).getMetaEvent());
+		assertEquals(4,mf.getEvents()[0].get(0).getMetaLength());
+		assertEquals(4,mf.getEvents()[0].get(0).getNumerator());
+		assertEquals(4,mf.getEvents()[0].get(0).getDenominator());
+	}//end hasCorrectTimeSignature
+	
+	@Test
+	void hasCorrectTempo()
+	{
+		assertEquals(81,mf.getEvents()[0].get(1).getMetaEvent());
+		assertEquals(3,mf.getEvents()[0].get(1).getMetaLength()); // always 3
+		assertEquals(545454,mf.getEvents()[0].get(1).getTempo());
+	}//end hasCorrectTempo
 }//end MidiFileTest - class
