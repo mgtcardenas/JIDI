@@ -47,4 +47,10 @@ public class MidiFileTest
 		assertEquals(3,mf.getEvents()[0].get(1).getMetaLength()); // always 3
 		assertEquals(545454,mf.getEvents()[0].get(1).getTempo());
 	}//end hasCorrectTempo
+
+	@Test
+	void writesCorrectly()
+	{
+		assertEquals(true, mf.write("success.mid", mf.getEvents(), mf.getQuarterNote()));
+	}//end writesCorrectly
 }//end MidiFileTest - class
