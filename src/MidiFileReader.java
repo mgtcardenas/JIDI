@@ -14,7 +14,7 @@ public class MidiFileReader
 
 	public void readFile(MidiFile midiFile) throws MidiException
 	{
-		verifyHeader();
+		verifyHeader  (        );
 
 		midiFile.setTrackMode      (file.readShort()          );
 		midiFile.setNumEventTracks(file.readShort());
@@ -26,18 +26,19 @@ public class MidiFileReader
 		midiFile.setTracks         (new ArrayList<MidiTrack>());
 		midiFile.setTrackPerChannel(false                     );
 
-		computeTracks(midiFile);
-		//		computePulsesSong(midiFile);
-		//		verifyChannels(midiFile);
-		//		checkStartTimes(midiFile.getTracks());
-		//		readTimeSignature(midiFile);
-		//		roundDurations(midiFile);
+		computeTracks    (midiFile);
+		computePulsesSong(midiFile);
+		verifyChannels(midiFile);
+		checkStartTimes(midiFile.getTracks());
+		readTimeSignature(midiFile);
+		//		roundDurations(midiFile); is commented in the resources
 
 		file.empty();
 	}// end readFile
 
 	/**
 	 * Makes sure that the header begins with "MThd" and that length of header is 6
+	 *
 	 * @throws MidiException - if any of the two conditions above are false
 	 */
 	private void verifyHeader() throws MidiException
@@ -53,9 +54,12 @@ public class MidiFileReader
 		    throw new MidiException("Bad MThd header length", 4);
 	}// end verifyHeader
 
+	//region Regarding Tracks
 	/**
 	 * For each of the event tracks (MTrk) that this file says it has,
+	 *
 	 * @param omidiFile
+	 *
 	 * @throws MidiException
 	 */
 	private void computeTracks(MidiFile omidiFile) throws MidiException
@@ -251,31 +255,163 @@ public class MidiFileReader
 
 		return " Tempo " + mEvent.getTempo();
 	}// end setMetaEventTempo
+	//endregion Regarding Tracks
 
+	//TODO: Verify that this works
 	private void computePulsesSong(MidiFile omidiFile)
 	{
-
+		for (int ev = 0; ev < omidiFile.getEvents().length; ev++)
+			for (int e = 0; e < omidiFile.getEvents()[ev].size(); e++)
+				if (omidiFile.getTotalPulses() < omidiFile.getEvents()[ev].get(e).getStartTime())
+					omidiFile.setTotalPulses(omidiFile.getEvents()[ev].get(e).getStartTime());
 	}// end computePulsesSong
 
+	//region Regarding Channels
+	//TODO: Verify that this works
 	private void verifyChannels(MidiFile omidiFile)
 	{
-
+		// If we only have one track with multiple channels, then treat each channel as a separate track.
+		if (omidiFile.getTracks().size() == 1 && hasMultipleChannels(omidiFile.getTracks().get(0)))
+		{
+			omidiFile.setTracks         (splitChannels(omidiFile, omidiFile.getEvents()[omidiFile.getTracks().get(0).getTracknum()]));
+			omidiFile.setTrackPerChannel(true                                                                                       );
+		}//end if
 	}// end verifyChannels
 
+	//TODO: Verify that this works
+	/**
+	 * Return true if this track contains multiple channels.
+	 * If a MidiFile contains only one track, and it has multiple channels,
+	 * then we treat each channel as a separate track.
+	 */
+	private boolean hasMultipleChannels(MidiTrack track)
+	{
+		int      channel = track.getNotes().get(0).getChannel();
+
+		MidiNote note;
+		for (int n = 0; n < track.getNotes().size(); n++)
+		{
+			note = track.getNotes().get(n);
+			if (note.getChannel() != channel)
+			    return true;
+		}//end for - n
+
+		return false;
+	}// end hasMultipleChannels
+
+	//TODO: Verify that this works
+	/**
+	 * Split the given track into multiple tracks, separating each
+	 * channel into a separate track.
+	 */
+	private List<MidiTrack> splitChannels(MidiFile file, List<MidiEvent> events)
+	{
+		MidiTrack origtrack          = file.getTracks().get(0);
+		int[]     channelInstruments = new int[16];             // Find the instrument used for each channel
+
+		MidiEvent m_event;
+		for (int e = 0; e < events.size(); e++)
+		{
+			m_event = events.get(e);
+			if (m_event.getEventFlag() == MUtil.EventProgramChange)
+			    channelInstruments[m_event.getChannel()] = m_event.getInstrument();
+		}//end for - e
+
+		channelInstruments[9] = 128; // Channel 9 = Percussion
+
+		List<MidiTrack> result = new ArrayList<>();
+
+		MidiNote        note;
+		for (int n = 0; n < origtrack.getNotes().size(); n++)
+		{
+			boolean foundchannel = false;
+			note = origtrack.getNotes().get(n);
+
+			MidiTrack track;
+			for (int t = 0; t < result.size(); t++)
+			{
+				track = result.get(t);
+				if (note.getChannel() == track.getNotes().get(0).getChannel())
+				{
+					foundchannel = true;
+					track.addNote(note);
+				}//end if
+			}//end for - t
+
+			if (!foundchannel)
+			{
+				track = new MidiTrack(result.size() + 1, MUtil.QuarterNote);
+				track.addNote(note);
+				track.setInstrument(channelInstruments[note.getChannel()]);
+				track.setHasNotes(true);
+				result.add(track);
+				//file.NumberOfMeasures++;
+			}//end if
+		}//end for - n
+
+		return result;
+	}// end splitChannels
+	//endregion Regarding Channels
+
+	//TODO: Verify that this works
 	/**
 	 * Check that the MidiNote start times are in increasing order.
 	 * This is for debugging purposes.
 	 */
 	private void checkStartTimes(List<MidiTrack> tracks) throws MidiException
 	{
+		MidiTrack track;
+		for (int t = 0; t < tracks.size(); t++)
+		{
+			track = tracks.get(t);
+			int      prevtime = -1;
+			MidiNote note;
+			for (int n = 0; n < track.getNotes().size(); n++)
+			{
+				note = track.getNotes().get(n);
+				if (note.getStartTime() < prevtime)
+				    throw new MidiException("start times not in increasing order", -1);
 
+				prevtime = note.getStartTime();
+			}//end for - n
+		}//end for - t
 	}// end checkStartTimes
 
+	//TODO: Verify that this works
 	private void readTimeSignature(MidiFile omidiFile) throws MidiException
 	{
+		// Determine the time signature
+		int             tempo = 0;
+		int             numer = 0;
+		int             denom = 0;
 
+		List<MidiEvent> list;
+		for (int i = 0; i < omidiFile.getEvents().length; i++)
+		{
+			list = omidiFile.getEvents()[i];
+			MidiEvent mevent;
+			for (int j = 0; j < list.size(); j++)
+			{
+				mevent = list.get(j);
+				if (mevent.getMetaEvent() == MUtil.MetaEventTempo         && tempo == 0)
+				    tempo = mevent.getTempo();
+				if (mevent.getMetaEvent() == MUtil.MetaEventTimeSignature && numer == 0)
+				{
+					numer = mevent.getNumerator();
+					denom = mevent.getDenominator();
+				}//end if
+			}//end for - j
+		}//end for - i
+
+		if (tempo == 0)
+		    tempo = 500000;    /* 500,000 microseconds = 0.05 sec */
+		if (numer == 0)
+		    numer = denom = 4;
+
+		omidiFile.setTimeSig(new TimeSignature(numer, denom, omidiFile.getQuarterNote(), tempo));
 	}// end readTimeSignature
 
+	//TODO: Verify that this works
 	/**
 	 * We want note durations to span up to the next note in general.
 	 * The sheet music looks nicer that way. In contrast, sheet music
@@ -288,25 +424,55 @@ public class MidiFileReader
 	 */
 	public static void roundDurations(MidiFile midiFile)
 	{
+		List<MidiTrack> tracks;
+		int quarterNote;
 
+		tracks      = midiFile.getTracks();
+		quarterNote = midiFile.getQuarterNote();
+		for (MidiTrack track : tracks)
+		{
+			MidiNote prevNote = null;
+			for (int i = 0; i < track.getNotes().size() - 1; i++)
+			{
+				MidiNote note1 = track.getNotes().get(i);
+				if (prevNote == null)
+					prevNote = note1;
+
+				// Get the next note that has a different start time
+				MidiNote note2 = note1;
+				for (int j = i + 1; j < track.getNotes().size(); j++)
+				{
+					note2 = track.getNotes().get(j);
+					if (note1.getStartTime() < note2.getStartTime())
+						break;
+				}//end for
+				int maxduration = note2.getStartTime() - note1.getStartTime();
+
+				int dur = 0;
+				if (quarterNote <= maxduration)
+					dur = quarterNote;
+				else if (quarterNote / 2 <= maxduration)
+					dur = quarterNote / 2;
+				else if (quarterNote / 3 <= maxduration)
+					dur = quarterNote / 3;
+				else if (quarterNote / 4 <= maxduration)
+					dur = quarterNote / 4;
+
+				if (dur < note1.getLength())
+					dur = note1.getLength();
+
+				/* Special case: If the previous note's duration
+				 * matches this note's duration, we can make a notepair.
+				 * So don't expand the duration in that case.
+				 */
+				if ((prevNote.getStartTime() + prevNote.getLength() == note1.getStartTime()) &&
+				    (prevNote.getLength() == note1.getLength()))
+					dur = note1.getLength();
+
+				note1.setLength(dur);
+				if (track.getNotes().get(i + 1).getStartTime() != note1.getStartTime())
+					prevNote = note1;
+			}//end for - i
+		}//end foreach
 	}// end RoundDuration
-
-	/**
-	 * Return true if this track contains multiple channels.
-	 * If a MidiFile contains only one track, and it has multiple channels,
-	 * then we treat each channel as a separate track.
-	 */
-	private boolean hasMultipleChannels(MidiTrack track)
-	{
-		return false;
-	}// end hasMultipleChannels
-
-	/**
-	 * Split the given track into multiple tracks, separating each
-	 * channel into a separate track.
-	 */
-	private List<MidiTrack> splitChannels(MidiFile file, List<MidiEvent> events)
-	{
-		return null;
-	}// end splitChannels
 }//end MidiFileReader - class

@@ -39,7 +39,7 @@ import java.util.List;
 public class MidiFile
 {
 	private String            fileName;        // The MIDI file name
-	private List<MidiEvent>[] events;          // The raw MIDI Events, one list per track
+	private List<MidiEvent>[] events;          // The raw MIDI Events, one list per track as an array of list
 	private List<MidiTrack>   tracks;          // The tracks of the MIDI file that have notes
 	private int               trackMode;       // 0 (single track), 1 (simultaneous tracks), 2 (independent tracks)
 	private TimeSignature     timeSig;         // The Time Signature (e.g. 4/4, 3/4, 6/8)
@@ -61,7 +61,7 @@ public class MidiFile
 
 		mfr           = new MidiFileReader(fileName);
 
-		mfr.readFile(this); // This method initiates flow of operations
+		mfr.readFile(this);           // This method initiates flow of operations
 	}//end MidiFile - constructor
 
 	//region Getters & Setters
@@ -155,4 +155,18 @@ public class MidiFile
 		this.numEventTracks = numEventTracks;
 	}//end setNumEventTracks
 	//endregion Getters & Setters
+
+	//TODO: implement this function aftwer finishing MidiFilewriter
+	public boolean write(String name, List<MidiEvent>[] events, int quarterSize)
+	{
+		return false;
+	}//end write
+
+	@Override
+	public String toString()
+	{
+		String result = "Midi File tracks = " + tracks.size() + "\n";
+		result += timeSig.toString();
+		return result;
+	}//eng toString
 }//end MidiFile - class
