@@ -9,10 +9,10 @@ public class MUtil
 	//region MIDI Events
 	public static final int EventNoteOff         = 0x80;
 	public static final int EventNoteOn          = 0x90;
-	public static final int EventKeyPressure     = 0xA0;
-	public static final int EventControlChange   = 0xB0;
-	public static final int EventProgramChange   = 0xC0;
-	public static final int EventChannelPressure = 0xD0;
+	public static final int EventKeyPressure     = 0xA0; // Polyphonic After Touch
+	public static final int EventControlChange   = 0xB0; // FX, Vibrato, Switches, Depth, Low_Res
+	public static final int EventProgramChange   = 0xC0; // Voice Number (INSTRUMENT)
+	public static final int EventChannelPressure = 0xD0; // aka ChannelAfterTouch
 	public static final int EventPitchBend       = 0xE0;
 	public static final int SysexEvent1          = 0xF0;
 	public static final int SysexEvent2          = 0xF7;

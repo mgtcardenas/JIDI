@@ -136,7 +136,6 @@ public class MidiFileReader
 			    channel = eventFlag % 16;
 
 			mEvent.setEventFlag(eventFlag - channel);
-			//TODO: Fill the rest of the cases
 			switch (mEvent.getEventFlag())
 			{
 				case MUtil.EventNoteOn:
@@ -164,11 +163,65 @@ public class MidiFileReader
 					mEvent.setType("EventNoteOff"                                                                          );
 					break;
 
+				//TODO: Verify that this works
+				case MUtil.EventChannelPressure: // aka ChannelAfterTouch
+					mEvent.setChannel     (channel        );
+					mEvent.setChanPressure(file.readByte());
+					mEvent.setText("ChannelAfterTouch Ch: " + channel + " pressure: " + mEvent.getChanPressure());
+					mEvent.setType("EventChannelPressure"                                                       );
+					break;
+
+				//TODO: Verify that this works
+				case MUtil.EventControlChange:
+					mEvent.setChannel     (channel        );
+					mEvent.setControlNum  (file.readByte());
+					mEvent.setControlValue(file.readByte());
+					mEvent.setText("CC Ch: " + channel + " C: " + MUtil.CC.get(mEvent.getControlNum()) + " value: " + mEvent.getControlValue());
+					mEvent.setType("EventControlChange"                                                                                       );
+					break;
+
+				//TODO: Verify that this works
+				case MUtil.EventKeyPressure:
+					mEvent.setChannel(channel);
+					mEvent.setNoteNumber(file.readByte());
+					mEvent.setKeyPressure(file.readByte());
+					mEvent.setText("EventKeyPressure Ch: " + channel + " note: " + mEvent.getNoteNumber() + " pressure: " + mEvent.getKeyPressure());
+					mEvent.setType("EventKeyPressure"                                                                                              );
+					break;
+
+				//TODO: Verify that this works
+				case MUtil.EventPitchBend:
+					mEvent.setChannel(channel);
+					mEvent.setPitchBend(file.readShort());
+					mEvent.setText("EventPitchBend Ch: " + channel + " PitchBend: " + mEvent.getPitchBend());
+					mEvent.setType("EventPitchBend"                                                        );
+					break;
+
 				case MUtil.EventProgramChange:
 					mEvent.setChannel(channel);
 					mEvent.setInstrument(file.readByte());
 					mEvent.setText("PC Ch: " + channel + " : " + MUtil.INSTRUMENT_NAME.get(mEvent.getInstrument()));
 					mEvent.setType("EventProgramChange"                                                           );
+					break;
+
+				//TODO: Verify that this works
+				case MUtil.SysexEvent1:
+					mEvent.setMetaLength(file.readVarlen());
+					mEvent.setValue(file.readBytes(mEvent.getMetaLength()));
+					String val = "";
+					for (int i = 0; i < mEvent.getValue().length; i++)
+						val += mEvent.getValue()[i] + " ";
+
+					mEvent.setText("SysexEvent1 length: " + mEvent.getMetaLength() + " value: " + val);
+					mEvent.setType("SysexEvent1"                                                     );
+					break;
+
+				//TODO: Verify that this works
+				case MUtil.SysexEvent2:
+					mEvent.setMetaLength(file.readVarlen());
+					mEvent.setValue(file.readBytes(mEvent.getMetaLength()));
+					mEvent.setText("SysexEvent2 length: " + mEvent.getMetaLength() + " value: " + mEvent.getValue());
+					mEvent.setType("SysexEvent2"                                                                   );
 					break;
 
 				case MUtil.MetaEvent:
