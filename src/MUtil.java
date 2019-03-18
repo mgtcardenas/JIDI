@@ -295,4 +295,182 @@ public class MUtil
 		SixteenthValue     =  3          * MUtil.base64;
 	}// end setQuarterNote
 	//endregion QUARTER_NOTE
+
+	//region KEY
+	private enum Key
+	{
+		A_FlatMinor,
+		E_FlatMinor,
+		B_FlatMinor,
+		F_Minor,
+		C_Minor,
+		G_Minor,
+		D_Minor,
+		A_Minor,
+		E_Minor,
+		B_Minor,
+		F_SharpMinor,
+		C_SharpMinor,
+		G_SharpMinor,
+		D_SharpMinor,
+		A_SharpMinor,
+		C_FlatMajor,
+		G_FlatMajor,
+		D_FlatMajor,
+		A_FlatMajor,
+		E_FlatMajor,
+		B_FlatMajor,
+		F_Major,
+		C_Major,
+		G_Major,
+		D_Major,
+		A_Major,
+		E_Major,
+		B_Major,
+		F_SharpMajor,
+		C_SharpMajor
+	}//end Key - enum
+
+	public static String translateKeySignature(byte[] message)
+	{
+		byte b   = message[0];
+		Key  key;
+
+		key = Key.A_FlatMajor;
+
+		// If the key is major.
+		if (message[1] == 0)
+		{
+			switch (b)
+			{
+				case -7:
+					key = Key.C_FlatMajor;
+					break;
+
+				case -6:
+					key = Key.G_FlatMajor;
+					break;
+
+				case -5:
+					key = Key.D_FlatMajor;
+					break;
+
+				case -4:
+					key = Key.A_FlatMajor;
+					break;
+
+				case -3:
+					key = Key.E_FlatMajor;
+					break;
+
+				case -2:
+					key = Key.B_FlatMajor;
+					break;
+
+				case -1:
+					key = Key.F_Major;
+					break;
+
+				case 0:
+					key = Key.C_Major;
+					break;
+
+				case 1:
+					key = Key.G_Major;
+					break;
+
+				case 2:
+					key = Key.D_Major;
+					break;
+
+				case 3:
+					key = Key.A_Major;
+					break;
+
+				case 4:
+					key = Key.E_Major;
+					break;
+
+				case 5:
+					key = Key.B_Major;
+					break;
+
+				case 6:
+					key = Key.F_SharpMajor;
+					break;
+
+				case 7:
+					key = Key.C_SharpMajor;
+					break;
+			}//end switch -b
+		}
+		else // Else the key is minor.
+		{
+			switch (b)
+			{
+				case -7:
+					key = Key.A_FlatMinor;
+					break;
+
+				case -6:
+					key = Key.E_FlatMinor;
+					break;
+
+				case -5:
+					key = Key.B_FlatMinor;
+					break;
+
+				case -4:
+					key = Key.F_Minor;
+					break;
+
+				case -3:
+					key = Key.C_Minor;
+					break;
+
+				case -2:
+					key = Key.G_Minor;
+					break;
+
+				case -1:
+					key = Key.D_Minor;
+					break;
+
+				case 0:
+					key = Key.A_Minor;
+					break;
+
+				case 1:
+					key = Key.E_Minor;
+					break;
+
+				case 2:
+					key = Key.B_Minor;
+					break;
+
+				case 3:
+					key = Key.F_SharpMinor;
+					break;
+
+				case 4:
+					key = Key.C_SharpMinor;
+					break;
+
+				case 5:
+					key = Key.G_SharpMinor;
+					break;
+
+				case 6:
+					key = Key.D_SharpMinor;
+					break;
+
+				case 7:
+					key = Key.A_SharpMinor;
+					break;
+			}//end switch - b
+		}//end if - else
+
+		return key.toString();
+	}//end translateKeySignature
+	//endregion KEY
 }//end MUtil - class

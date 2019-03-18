@@ -248,23 +248,94 @@ public class MidiFileReader
 		mEvent.setMeta      (MUtil.META_NAME.get(mEvent.getMetaEvent()));
 		result = "";
 
-		//TODO: Fill the rest of the cases
 		switch (mEvent.getMetaEvent())
 		{
-			case MUtil.MetaEventTimeSignature:
-				result = " TimeSignature " + setMetaEventTimeSignature(mEvent);
+			//TODO: Verify that this works
+			case MUtil.MetaEventCopyright:
+				result = " Copyright " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
 				break;
 
-			case MUtil.MetaEventTempo:
-				result = setMetaEventTempo(mEvent);
+			//TODO: Verify that this works
+			case MUtil.MetaEventCuePoint:
+				result = " CuePoint " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventDeviceName:
+				result = " DeviceName " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
 				break;
 
 			case MUtil.MetaEventEndOfTrack:
 				result = " End of track ";
 				break;
 
+			//TODO: Verify that this works
+			case MUtil.MetaEventInstrument:
+				result = " Instrument " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventKeySignature:
+				result = " KeySignature " + MUtil.translateKeySignature(mEvent.getValue());
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventLyric:
+				result = " Lyric " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventMarker:
+				result = " Marker " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventMIDIChannelPrefix:
+				int channel = mEvent.getValue()[0];
+				result = " MIDIChannelPrefix " + channel;
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventMIDIPort:
+				int port = mEvent.getValue()[0];
+				result = " MIDIPort " + port;
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventProgramName:
+				result = " ProgramName " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventSequence:
+				result = " Sequence " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
 			case MUtil.MetaEventSequenceName:
 				result = " SequenceName " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventSequencerSpecificEvent:
+				result = " SequencerSpecific " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventSMPTEOffset:
+				result = " SMPTEOffset " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			case MUtil.MetaEventTempo:
+				result = setMetaEventTempo(mEvent);
+				break;
+
+			//TODO: Verify that this works
+			case MUtil.MetaEventText:
+				result = " Text " + new String(mEvent.getValue(), StandardCharsets.UTF_8);
+				break;
+
+			case MUtil.MetaEventTimeSignature:
+				result = " TimeSignature " + setMetaEventTimeSignature(mEvent);
 				break;
 		}//end switch mEvent.getMetaEvent()
 
