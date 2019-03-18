@@ -55,6 +55,7 @@ public class MidiFileReader
 	}// end verifyHeader
 
 	//region Regarding Tracks
+
 	/**
 	 * For each of the event tracks (MTrk) that this file says it has,
 	 *
@@ -279,6 +280,7 @@ public class MidiFileReader
 	}// end verifyChannels
 
 	//TODO: Verify that this works
+
 	/**
 	 * Return true if this track contains multiple channels.
 	 * If a MidiFile contains only one track, and it has multiple channels,
@@ -300,6 +302,7 @@ public class MidiFileReader
 	}// end hasMultipleChannels
 
 	//TODO: Verify that this works
+
 	/**
 	 * Split the given track into multiple tracks, separating each
 	 * channel into a separate track.
@@ -354,6 +357,7 @@ public class MidiFileReader
 	//endregion Regarding Channels
 
 	//TODO: Verify that this works
+
 	/**
 	 * Check that the MidiNote start times are in increasing order.
 	 * This is for debugging purposes.
@@ -412,6 +416,7 @@ public class MidiFileReader
 	}// end readTimeSignature
 
 	//TODO: Verify that this works
+
 	/**
 	 * We want note durations to span up to the next note in general.
 	 * The sheet music looks nicer that way. In contrast, sheet music
@@ -425,7 +430,7 @@ public class MidiFileReader
 	public static void roundDurations(MidiFile midiFile)
 	{
 		List<MidiTrack> tracks;
-		int quarterNote;
+		int             quarterNote;
 
 		tracks      = midiFile.getTracks();
 		quarterNote = midiFile.getQuarterNote();
@@ -436,7 +441,7 @@ public class MidiFileReader
 			{
 				MidiNote note1 = track.getNotes().get(i);
 				if (prevNote == null)
-					prevNote = note1;
+				    prevNote = note1;
 
 				// Get the next note that has a different start time
 				MidiNote note2 = note1;
@@ -444,34 +449,33 @@ public class MidiFileReader
 				{
 					note2 = track.getNotes().get(j);
 					if (note1.getStartTime() < note2.getStartTime())
-						break;
+					    break;
 				}//end for
 				int maxduration = note2.getStartTime() - note1.getStartTime();
 
-				int dur = 0;
-				if (quarterNote <= maxduration)
-					dur = quarterNote;
+				int dur         = 0;
+				if      (quarterNote     <= maxduration)
+				    dur = quarterNote;
 				else if (quarterNote / 2 <= maxduration)
-					dur = quarterNote / 2;
+				    dur = quarterNote / 2;
 				else if (quarterNote / 3 <= maxduration)
-					dur = quarterNote / 3;
+				    dur = quarterNote / 3;
 				else if (quarterNote / 4 <= maxduration)
-					dur = quarterNote / 4;
+				    dur = quarterNote / 4;
 
-				if (dur < note1.getLength())
-					dur = note1.getLength();
+				if      (dur < note1.getLength()       )
+				    dur = note1.getLength();
 
 				/* Special case: If the previous note's duration
 				 * matches this note's duration, we can make a notepair.
 				 * So don't expand the duration in that case.
 				 */
-				if ((prevNote.getStartTime() + prevNote.getLength() == note1.getStartTime()) &&
-				    (prevNote.getLength() == note1.getLength()))
-					dur = note1.getLength();
+				if ((prevNote.getStartTime() + prevNote.getLength() == note1.getStartTime()) && (prevNote.getLength() == note1.getLength()))
+				    dur = note1.getLength();
 
 				note1.setLength(dur);
 				if (track.getNotes().get(i + 1).getStartTime() != note1.getStartTime())
-					prevNote = note1;
+				    prevNote = note1;
 			}//end for - i
 		}//end foreach
 	}// end RoundDuration
