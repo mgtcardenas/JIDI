@@ -6,7 +6,7 @@ public class MUtil
 
 	public static final int      UBYTE_MAX_VALUE = 255;
 
-	//region MIDI Events
+	//region MIDI_EVENTS
 	public static final int EventNoteOff         = 0x80;
 	public static final int EventNoteOn          = 0x90;
 	public static final int EventKeyPressure     = 0xA0; // Polyphonic After Touch
@@ -17,9 +17,9 @@ public class MUtil
 	public static final int SysexEvent1          = 0xF0;
 	public static final int SysexEvent2          = 0xF7;
 	public static final int MetaEvent            = 0xFF;
-	//endregion MIDI Events
+	//endregion MIDI_EVENTS
 
-	//region Meta Events
+	//region META_EVENTS
 	public static final int MetaEventSequence               =  0x0;
 	public static final int MetaEventText                   =  0x1;
 	public static final int MetaEventCopyright              =  0x2;
@@ -38,7 +38,7 @@ public class MUtil
 	public static final int MetaEventTimeSignature          = 0x58;
 	public static final int MetaEventKeySignature           = 0x59;
 	public static final int MetaEventSequencerSpecificEvent = 0x7F;
-	//endregion Meta Events
+	//endregion META_EVENTS
 
 	//region META_NAME
 	public static final Hashtable<Integer, String> META_NAME = new Hashtable<Integer, String>();

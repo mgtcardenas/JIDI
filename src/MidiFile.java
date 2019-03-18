@@ -51,14 +51,11 @@ public class MidiFile
 	public MidiFile(String fileName) throws IOException, MidiException
 	{
 		File           file;
-		String         name;
 		MidiFileReader mfr;
 
 		//gets filename without extension but keeps filename as path for MidiFileReader constructor
 		file          = new File(fileName);
-		name          = file.getName();
-		this.fileName = name.substring(0, name.lastIndexOf('.'));
-
+		this.fileName = file.getName();
 		mfr           = new MidiFileReader(fileName);
 
 		mfr.readFile(this);           // This method initiates flow of operations
@@ -156,10 +153,10 @@ public class MidiFile
 	}//end setNumEventTracks
 	//endregion Getters & Setters
 
-	//TODO: implement this function aftwer finishing MidiFilewriter
 	public boolean write(String name, List<MidiEvent>[] events, int quarterSize)
 	{
-		return false;
+		MidiFileWriter writer = new MidiFileWriter();
+		return writer.write(name, events, quarterSize);
 	}//end write
 
 	@Override

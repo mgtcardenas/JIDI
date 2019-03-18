@@ -18,7 +18,7 @@ public class MidiFileTest
 	@Test
 	void hasCorrectFileName()
 	{
-		assertEquals("c-scale", mf.getFileName());
+		assertEquals("c-scale.mid", mf.getFileName());
 	}//end hasCorrectFileName
 
 	@Test
